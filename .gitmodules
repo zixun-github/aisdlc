@@ -1,0 +1,3 @@
+[submodule ".aisdlc-cli"]
+	path = .aisdlc-cli
+	url = git@git.ziniao.com:etools/tools/sdlc-template.git
