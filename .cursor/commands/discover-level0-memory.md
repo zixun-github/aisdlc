@@ -1,0 +1,1 @@
+E:/dev/tools/sdlc-dev/.aisdlc-cli/commands/discover-level0-memory.md
