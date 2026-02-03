@@ -6,7 +6,7 @@ module: R2
 principles_ref: design/aisdlc.md
 source_refs:
   - design/aisdlc_spec_product.md
-  - design/aisdlc_spec_product_clarify.md
+  - design/product/aisdlc_spec_product_clarify.md
 ---
 
 ## 0. 目标与定位
@@ -140,12 +140,22 @@ source_refs:
 
 ---
 
-## 5. 给出下一步命令的引导
+## 5. 下一步命令指引（执行完 `spec-product-competitors` 后）
 
-完成 `competitors.md` 后，建议按模块继续推进：
+当 R2 命令 `spec-product-competitors` 完成、并已落盘 `{FEATURE_DIR}/requirements/competitors.md` 后，建议按以下顺序继续（对齐 `design/aisdlc_spec_product.md` 的“命令式工作流”）：
 
-- **进入 R3（方案备选与评估）**：基于 `competitors.md` 的“候选策略/功能池”，生成 `{FEATURE_DIR}/requirements/solutions.md`（参考 `design/aisdlc_spec_product.md` 的 R3 指引）
-- **进入 R5（PRD）**：沉淀可验收需求与约束，输出 `{FEATURE_DIR}/requirements/prd.md`
+### 5.1 下一步（必须先做 R3）
+
+- **下一步命令（R3）**：执行 `spec-product-solutions`  
+  - **输入要点**：R3 有门禁，必须先拿到用户输入的“解决方案描述”（完整方案或本轮修改点）
+  - **产物**：`{FEATURE_DIR}/requirements/solutions.md`
+
+> 说明：R2 的“功能池/机制池”是供 R3 复用的发散输入；在没有完成 R3（最终方案结构化 + 覆盖校验 + 风险/验证）之前，不建议直接进入 PRD。
+
+### 5.2 然后进入 PRD（R5）
+
+- **后续命令（R5）**：执行 `spec-product-prd`  
+  - **产物**：`{FEATURE_DIR}/requirements/prd.md`
 
 ---
 
@@ -242,6 +252,7 @@ PICKS
 请审查 competitors.md 是否达到 R2-DoD，并输出：
 1) 通过项清单（勾选框）
 2) 未通过项清单（缺什么、如何补齐、向谁询问/从哪里取证）
+3) 下一步命令建议（只给命令名 + 一句话原因）
 
 R2-DoD：
 - 对比基准绑定到 R1 的场景
@@ -250,6 +261,10 @@ R2-DoD：
 - 每个竞品必须输出“细化功能清单”（建议 L1/L2/L3），且覆盖主流程关键功能点与细节字段（规则/状态/异常/权限/默认值/限制）
 - 输出包含“功能/机制整合（功能池）”并能直接作为 R3 方案发散素材（条目带来源与证据入口）
 - 每个竞品至少给出 2 条“可借鉴机制”与 1 条“明确缺陷/风险”
+
+下一步命令建议规则：
+- 先执行 `spec-product-solutions`（R3：结构化方案并对齐 R1/R2）
+- R3 完成后再执行 `spec-product-prd`（R5：转写为可验收 PRD）
 ```
 
 ---

@@ -6,8 +6,8 @@ module: R3
 principles_ref: design/aisdlc.md
 source_refs:
   - design/aisdlc_spec_product.md
-  - design/aisdlc_spec_product_clarify.md
-  - design/aisdlc_spec_product_competitors.md
+  - design/product/aisdlc_spec_product_clarify.md
+  - design/product/aisdlc_spec_product_competitors.md
 ---
 
 ## 0. 目标与定位
@@ -21,13 +21,13 @@ source_refs:
 
 通过“结构化表达 → 覆盖校验（对齐 clarify）→ 细化补齐 → 记录变更”的可重复命令闭环，稳定落盘：
 
-- `{FEATURE_DIR}/requirements/solutions.md`（候选方案 + 对比矩阵 + 功能池/MoSCoW + 最终选择/弃用理由 + 风险登记 + 验证计划）
+- `{FEATURE_DIR}/requirements/solutions.md`（候选方案 + 对比矩阵 + 最终选择/弃用理由 + 风险登记 + 验证计划）
 
 核心目标：
 
 - **可迭代**：同一命令可被用户重复执行多轮；每轮都能在现有方案上进一步细化，并沉淀变更记录
 - **覆盖 R1**：最终方案必须覆盖 `clarify.md` 的场景、边界、约束、关键干系人关注点，尤其要分析并覆盖“情景痛点/快点”
-- **可评审/可落地**：输出包含可执行的 MVP、风险登记与验证计划，可直接进入 R5（PRD）
+- **可评审/可落地**：输出包含风险登记与验证计划，可直接进入 R5（PRD，MVP/MoSCoW 在 R5 完成）
 - **可停止**：每轮都有明确停止机制，避免无限讨论
 
 ---
@@ -52,7 +52,6 @@ source_refs:
 - **最终方案是什么**（结构化描述：核心机制/流程/规则/状态/异常/权限/默认值/限制）？
 - **它如何覆盖 R1**：对 `clarify.md` 的场景、痛点/快点、边界、约束、干系人关注点逐条对齐（包含覆盖表/缺口与应对）
 - **当前方案的优点/缺点**（至少包含对高优先级干系人的影响）
-- **MVP 怎么切**（MoSCoW + MVP Must 集合）
 - **关键风险与关键假设怎么验证**（风险登记 + 验证计划）
 - **本轮相对上轮改了什么**（迭代记录，便于多轮调整）
 
@@ -110,7 +109,7 @@ source_refs:
 - 快点强化（每条快点如何被放大/保留）
 - 边界与约束匹配（In/Out、合规/权限/审计留痕等）
 - 干系人关注点（立项/合规/验收/审批）的可答复性
-- 可落地性（MVP 切法、依赖、复杂度）
+- 可落地性（依赖、复杂度）
 - 可验证性（指标/埋点/实验设计）
 
 ---
@@ -147,7 +146,6 @@ source_refs:
 - 当前最终方案（结构化）
 - 覆盖分析（对 `clarify.md` 的痛点/快点/边界/约束/干系人）
 - 当前方案优点/缺点
-- MVP 与 MoSCoW（含 Won’t）
 - 风险登记与验证计划
 - 迭代记录（追加式）
 
@@ -159,7 +157,6 @@ source_refs:
 - [ ] 当前最终方案已结构化（机制/流程/规则/状态/异常/权限/默认值/限制）
 - [ ] **覆盖到 `clarify.md`**：对场景/痛点/快点/边界/约束/干系人逐条对齐，并显式写出缺口与应对
 - [ ] 输出包含**当前方案优点/缺点**（含对高优先级干系人的影响）
-- [ ] `solutions.md` 包含可执行的 MoSCoW（含 Won’t），且 MVP 覆盖 Must
 - [ ] 风险与验证计划可执行（Owner/信号/动作明确）
 - [ ] 存在可追溯的迭代记录（至少 1 条；多轮追加不覆盖历史）
 
@@ -178,9 +175,12 @@ source_refs:
 
 ---
 
-## 8. 后续模块衔接
+## 8. 下一步命令指引（执行完 `spec-product-solutions` 后）
 
-完成 `requirements/solutions.md` 后建议继续：
+当 R3 命令 `spec-product-solutions` 完成、并已落盘 `{FEATURE_DIR}/requirements/solutions.md` 后，下一步进入 PRD 转写阶段：
 
-- **进入 R5（PRD）**：输出 `{FEATURE_DIR}/requirements/prd.md`
+- **下一步命令（R5）**：执行 `spec-product-prd`  
+  - **产物**：`{FEATURE_DIR}/requirements/prd.md`
+
+> 回流提示：若在后续 PRD/交互/原型评审中发现“核心机制、关键规则、风险权衡”需要调整，应回流更新 `solutions.md`（再运行本命令），再继续推进 R5/R6/R7，避免下游口径漂移。
 
