@@ -1,3 +1,8 @@
+---
+markdown-sharing:
+  uri: 7ac73b2a-67cd-46a2-866c-93cc56503720
+---
+
 # AI SDLC 项目知识库（项目级 SSOT + 需求执行 Spec Pack + 渐进式披露）方案
 
 本文档定义一个用于 SDLC 全流程的 **AI 项目知识库**：以 **项目级 SSOT** 作为长期、稳定的单一事实源（SSOT），并支持 **AI 渐进式披露（Progressive Disclosure）**，让各阶段 Agent 能"先看地图，再按需取证"。
