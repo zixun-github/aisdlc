@@ -4,6 +4,13 @@
 
 ---
 
+### 安装 / 更新
+
+```powershell
+npx skills add https://github.com/zixun-github/aisdlc --skill * --agent claude-code --yes --copy
+```
+---
+
 ### Spec Pack（你最终会落盘什么）
 
 - **分支**：`{num}-{short-name}`
@@ -18,6 +25,7 @@
 ---
 
 ### 步骤速览（用途 & 输出）
+
 - **R0：`spec-init`（初始化新需求）**
   - **用途**：创建新的 Spec 工作空间（分支 + Spec Pack 目录），把原始需求落盘成可追溯输入
   - **输出**：新分支 `{num}-{short-name}` + `.aisdlc/specs/{branch}/...` + `requirements/raw.md`
