@@ -1,13 +1,11 @@
 {
-  "name": "sdlc-dev-skills",
-  "version": "0.1.0",
-  "description": "Writing guidance based on William Strunk Jr.'s The Elements of Style (1918)",
-  "author": {
-    "name": "Jesse Vincent",
-    "url": "https://github.com/obra"
-  },
-  "homepage": "https://github.com/obra/elements-of-style",
-  "repository": "https://github.com/obra/elements-of-style",
-  "license": "Public Domain",
-  "keywords": ["ai-sdlc", "spec", "workflow", "cursor", "claude-code"]
-}
+    "name": "sdlc-dev-skills",
+    "version": "0.1.0",
+    "description": "SDLC Dev 技能库：用于 spec 初始化、需求澄清、上下文定位与写作规范等工作流的可组合技能集合。",
+    "author": {
+      "name": "sdlc-dev"
+    },
+    "skills": "./",
+    "keywords": ["ai-sdlc", "spec", "workflow", "cursor", "claude-code"]
+  }
+  
