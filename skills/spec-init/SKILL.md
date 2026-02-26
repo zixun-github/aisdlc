@@ -26,19 +26,28 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 - **统一输出位置**：`.aisdlc/specs/{num}-{short-name}/`
 - **必备子目录**：`requirements/`、`design/`、`implementation/`、`verification/`、`release/`
 - **初始文件**：`requirements/raw.md`（内容=原始需求；编码=UTF-8 with BOM）
-- **脚本入口**：`spec-create-branch.ps1` 的 `Main`
-- **脚本参数**
+- **脚本位置**：脚本与本 `SKILL.md` 同目录
+- **脚本入口（PowerShell）**：`spec-create-branch.ps1` 的 `Main`（需 PowerShell 7+）
+- **脚本入口（Bash）**：`spec-create-branch.sh`（命令行参数见 `--help`）
+- **自动选择规则**：在 Windows/PowerShell 环境优先使用 PowerShell；在 macOS/Linux 的 bash 环境使用 Bash 版本（两者行为对齐，差别仅在调用方式与返回值形态）。
+- **脚本参数（PowerShell）**
   - `-ShortName`（必需）
   - `-SourceFilePath`（必需，必须是文件路径）
   - `-Title`（可选）
-- **关键副作用**：脚本执行成功后会删除 `SourceFilePath` 指向的源文件（无论是原始文件还是临时文件）。
+- **参数拷贝红旗**：不要直接复制下文 `Main ... -SourceFilePath $sourceFilePath` 就运行；`$sourceFilePath` 必须先按“步骤 1”准备成**已存在的文件路径**。
+- **脚本参数（Bash）**
+  - `--short-name`（必需）
+  - `--source-file`（必需，必须是文件路径）
+  - `--title`（可选）
+- **关键副作用**：脚本执行成功后会删除传入的源文件（PowerShell：`SourceFilePath`；Bash：`--source-file`；无论是原始文件还是临时文件）。
 
 ## 实施步骤（Agent 行为规范）
 
 ### 0) 预检（不要跳过）
 
-- 确认当前工作目录在目标 Git 仓库内（`git rev-parse --show-toplevel` 能成功）。
-- 确认 PowerShell 版本满足脚本要求（脚本声明 `#Requires -Version 7.0`）。
+- 确认当前工作目录在目标 Git 仓库内（**在仓库任意子目录都可以**；只要 `git rev-parse --show-toplevel` 能成功）。
+- **PowerShell 路径**：确认 PowerShell 版本满足脚本要求（脚本声明 `#Requires -Version 7.0`）。
+- **Bash 路径**：确认 `bash` 可用，且有 `git`、`head`、`tail`、`mktemp`（脚本用于 BOM 处理与临时文件）。
 - 如果用户提供的是“文件路径”，提醒：该文件会被脚本删除；如需保留，先复制一份再传入。
 
 ### 1) 解析用户输入 → 一律落到文件路径
@@ -61,6 +70,19 @@ $tmp = Join-Path ([System.IO.Path]::GetTempPath()) ("sdlc-raw-{0}.md" -f ([guid]
 $sourceFilePath = $tmp
 ```
 
+Bash 模板（文本 → BOM 临时文件）：
+
+```bash
+raw_file="$(mktemp)"
+{
+  printf '\xEF\xBB\xBF'
+  cat <<'EOF'
+为现有后台系统新增‘批量导出订单’功能：支持按时间范围/状态筛选、CSV 与 XLSX 两种格式、导出任务异步执行并在导出中心可下载，权限仅管理员可见。
+EOF
+} >"$raw_file"
+source_file_path="$raw_file"
+```
+
 ### 2) 生成 `short-name`（2-4 词，kebab-case）
 
 从原始需求提炼 2-4 个词的短名称，优先“动词-名词”，保留常见技术缩写（如 `oauth2`、`jwt`、`api`）：
@@ -70,27 +92,32 @@ $sourceFilePath = $tmp
 
 ### 3) 调用脚本创建分支与 Spec Pack
 
-**必须用 dot sourcing 加载脚本并调用 `Main`，不要直接运行脚本文件。**
+**按操作系统自动选择脚本实现（不要硬跑“另一种”）。**
 
-```powershell
-$repoRoot = (git rev-parse --show-toplevel)
-. (Join-Path $repoRoot "./spec-create-branch.ps1")
+- Windows / PowerShell：用 dot sourcing 加载 `spec-create-branch.ps1` 并调用 `Main`
+- macOS/Linux / Bash：直接执行 `spec-create-branch.sh`（输出 JSON）
 
-$shortName = "export-orders"
-$title = ""
+**执行参数（只填参数即可）**
 
-$result = Main -ShortName $shortName -SourceFilePath $sourceFilePath -Title $title
-$result
-```
+- PowerShell（`Main`）：
+  - `-ShortName <kebab-case>`
+  - `-SourceFilePath <需求文件路径>`
+  - `-Title <可选>`
+  - 调用形态：`Main -ShortName <...> -SourceFilePath <...> [-Title <...>]`
+- Bash（`spec-create-branch.sh`）：
+  - `--short-name <kebab-case>`
+  - `--source-file <需求文件路径>`
+  - `--title <可选>`
+  - 调用形态：`spec-create-branch.sh --short-name <...> --source-file <...> [--title <...>]`
 
 ### 4) 验收（DoD）
 
 检查以下事实是否同时成立（缺一不可）：
 
-- 当前分支名等于 `$result.branchName`，且符合 `{num}-{short-name}`。
-- `.aisdlc/specs/$($result.branchName)/` 存在，且包含 5 个必需子目录。
-- `.aisdlc/specs/$($result.branchName)/requirements/raw.md` 存在，内容等于原始需求
-- `$sourceFilePath` 指向的源文件已被删除（这不是 bug；若用户需要保留，应在步骤 1 之前自行备份）。
+- 当前分支名（`git branch --show-current`）符合 `{num}-{short-name}`。
+- `.aisdlc/specs/<branchName>/` 存在，且包含 5 个必需子目录（`requirements/`、`design/`、`implementation/`、`verification/`、`release/`）。
+- `.aisdlc/specs/<branchName>/requirements/raw.md` 存在，内容等于原始需求（注意文件头有 UTF-8 BOM）。
+- 传入的源文件已被删除（这不是 bug；若用户需要保留，应在步骤 1 之前自行备份）。
 
 ### 5) 完成后：自动进入 `spec-product-clarify`（R1）
 
