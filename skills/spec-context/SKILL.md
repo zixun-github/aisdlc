@@ -39,7 +39,7 @@ echo "FEATURE_DIR=$FEATURE_DIR"
 ```
 
 ## 硬规则（必须遵守）
-
+- **脚本位置**：脚本与本 `SKILL.md` 同目录
 - **先定位再读写**：任何读/写 `requirements/*.md` 之前，必须先运行上面的脚本并回显 `FEATURE_DIR=...`。
 - **失败就停止**：PowerShell 的 `Get-SpecContext` 或 Bash 片段任意一步报错时，必须立刻停止，不得继续生成/写文件内容（否则几乎必然跑偏上下文）。
 - **只用 FEATURE_DIR 拼路径**：后续所有路径都必须以 `$FEATURE_DIR`（PowerShell）或 `${FEATURE_DIR}`（Bash）为前缀（禁止用当前工作目录做相对路径猜测）。
