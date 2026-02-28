@@ -131,3 +131,34 @@ git diff --stat
 **被调用于：**
 - **subagent-driven-development** - 所有任务完成后，用于最终验证
 - **spec-implementation-execute** 类流程的最后一步，用于收尾确认
+
+## 完成后输出（供 `using-aisdlc` 自动推进读取）
+
+在回答末尾追加以下两段（不要省略），并按实际结果填写：
+
+- 「本阶段产物已落盘。请回到 `using-aisdlc` 进行下一步路由（如未触发人工门禁，Router 可自动续跑）。」
+- `ROUTER_SUMMARY`：
+
+**全绿通过时：**
+
+```yaml
+ROUTER_SUMMARY:
+  stage: Finish
+  artifacts: []
+  needs_human_review: false
+  blocked: false
+  block_reason: ""
+  notes: "完成确认已输出（全绿）"
+```
+
+**任一验证失败并停止时：**
+
+```yaml
+ROUTER_SUMMARY:
+  stage: Finish
+  artifacts: []
+  needs_human_review: true
+  blocked: true
+  block_reason: "<填写失败项与最小复现命令>"
+  notes: "未通过收尾验证，需先修复失败项再重跑"
+```

@@ -90,6 +90,24 @@ description: Use when 需要在 Spec 级设计阶段执行 D1 research（产出 
 
 完成后：回到 `using-aisdlc` 路由下一步（通常进入 D2：`spec-design`）。
 
+## 完成后输出（供 `using-aisdlc` 自动推进读取）
+
+在回答末尾追加以下两段（不要省略）：
+
+- 「本阶段产物已落盘。请回到 `using-aisdlc` 进行下一步路由（如未触发人工门禁，Router 可自动续跑）。」
+- `ROUTER_SUMMARY`：
+
+```yaml
+ROUTER_SUMMARY:
+  stage: D1
+  artifacts:
+    - "{FEATURE_DIR}/design/research.md"
+  needs_human_review: true
+  blocked: false
+  block_reason: ""
+  notes: "research 结论建议评审；通常下一步进入 D2（spec-design）"
+```
+
 ## 红旗（出现任一即停止并纠偏）
 
 - 没有 `FEATURE_DIR=...` 就开始写/改 `design/research.md`

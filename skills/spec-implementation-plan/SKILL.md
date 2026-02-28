@@ -172,3 +172,21 @@ if ($null -ne $FEATURE_DIR -and (Test-Path $FEATURE_DIR) -and (Test-Path (Join-P
 - 提示：回到 `using-aisdlc` 进行下一步路由（通常路由到 I2：`spec-implementation-execute`，再到 Finish：`finishing-development`）
 - 若用户明确要求“本会话使用 subagent-driven-development 并行执行”，也应先回到 `using-aisdlc` 明确路由结论后再开始执行（避免出现第二个路由源）
 
+## 完成后输出（供 `using-aisdlc` 自动推进读取）
+
+在回答末尾追加以下两段（不要省略）：
+
+- 「本阶段产物已落盘。请回到 `using-aisdlc` 进行下一步路由（如未触发人工门禁，Router 可自动续跑）。」
+- `ROUTER_SUMMARY`：
+
+```yaml
+ROUTER_SUMMARY:
+  stage: I1
+  artifacts:
+    - "{FEATURE_DIR}/implementation/plan.md"
+  needs_human_review: true
+  blocked: false
+  block_reason: ""
+  notes: "plan.md 建议评审后再进入 I2 执行"
+```
+

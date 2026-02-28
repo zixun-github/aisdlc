@@ -160,6 +160,30 @@ if ($null -ne $FEATURE_DIR -and (Test-Path $FEATURE_DIR) -and (Test-Path (Join-P
 - 遇到阻塞/澄清项立刻停止，不要猜测推进
 - 执行中产生 ADR/契约：只在 `{FEATURE_DIR}` 内落盘草案，并在 `plan.md` 记录 Merge-back 待办（I2 不直接改 `project/*`）
 
+## 完成/检查点输出（供 `using-aisdlc` 自动推进读取）
+
+在以下任一时刻（批次检查点汇报结束 / 因阻塞停止 / 全部任务完成准备进入 Finish），在回答末尾追加以下两段（不要省略）：
+
+- 「本阶段产物已落盘。请回到 `using-aisdlc` 进行下一步路由（如未触发人工门禁，Router 可自动续跑）。」
+- `ROUTER_SUMMARY`（按当前状态填写；不要总是写死为同一个值）：
+
+**填写规则：**
+
+- **批次检查点（等待反馈）**：`needs_human_review=true`，`blocked=false`
+- **阻塞停止**：`needs_human_review=true`，`blocked=true`，并写清 `block_reason`
+- **全部任务完成，准备进入 Finish**：`needs_human_review=false`，`blocked=false`
+
+```yaml
+ROUTER_SUMMARY:
+  stage: I2
+  artifacts:
+    - "{FEATURE_DIR}/implementation/plan.md"
+  needs_human_review: true
+  blocked: false
+  block_reason: ""
+  notes: "示例：批次检查点已汇报，等待反馈后继续下一批"
+```
+
 ## 集成
 
 **上游 / 下游技能：**

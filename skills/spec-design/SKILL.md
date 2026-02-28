@@ -139,3 +139,21 @@ description: Use when 需要为某个 Spec Pack 产出 D2 决策文档（RFC/Dec
 - **错误**：只读索引（`components/index.md`、`adr/index.md` 或 impact-analysis 摘要），就写“已对齐/已合规”。  
   **修复**：对每个受影响模块与 ADR：必须全文读取并引用具体不变量/条款；读不到就写 `CONTEXT GAP`，且 DoD 不得通过。 
 
+## 完成后输出（供 `using-aisdlc` 自动推进读取）
+
+当 `{FEATURE_DIR}/design/design.md` 已落盘后，在回答末尾追加以下两段（不要省略）：
+
+- 「本阶段产物已落盘。请回到 `using-aisdlc` 进行下一步路由（如未触发人工门禁，Router 可自动续跑）。」
+- `ROUTER_SUMMARY`：
+
+```yaml
+ROUTER_SUMMARY:
+  stage: D2
+  artifacts:
+    - "{FEATURE_DIR}/design/design.md"
+  needs_human_review: true
+  blocked: false
+  block_reason: ""
+  notes: "RFC 建议评审通过后再进入 I1（spec-implementation-plan）"
+```
+

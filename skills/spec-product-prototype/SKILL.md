@@ -110,6 +110,24 @@ R3 的目标是把 `{FEATURE_DIR}/requirements/prd.md` 的**核心场景/规则/
 
 完成后：回到 `using-aisdlc` 路由下一步。
 
+## 完成后输出（供 `using-aisdlc` 自动推进读取）
+
+在回答末尾追加以下两段（不要省略）：
+
+- 「本阶段产物已落盘。请回到 `using-aisdlc` 进行下一步路由（如未触发人工门禁，Router 可自动续跑）。」
+- `ROUTER_SUMMARY`：
+
+```yaml
+ROUTER_SUMMARY:
+  stage: R3
+  artifacts:
+    - "{FEATURE_DIR}/requirements/prototype.md"
+  needs_human_review: true
+  blocked: false
+  block_reason: ""
+  notes: "原型建议走查后再进入 R4 或实现侧"
+```
+
 ## Quick reference（高频规则速查）
 
 - **必须**
