@@ -33,7 +33,7 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **2. 派发 code-reviewer 子智能体：**
 
-使用 Task 工具，类型为 code-reviewer，填写 `code-reviewer.md` 中的模板
+使用 Task 工具，类型为 code-reviewer，填写 `references/code-reviewer.md` 中的模板
 
 **占位符：**
 - `{WHAT_WAS_IMPLEMENTED}` - 你刚实现的内容
@@ -104,4 +104,4 @@ HEAD_SHA=$(git rev-parse HEAD)
 - 展示证明其有效的代码/测试
 - 请求澄清
 
-模板见：spec-requesting-code-review/code-reviewer.md
+模板见：`skills/requesting-code-review/references/code-reviewer.md`

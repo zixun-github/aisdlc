@@ -13,6 +13,9 @@ repo: sdlc-dev
 markdown-sharing:
   uri: 97db1123-6412-4e1a-9d9a-9362839137df
 ---
+
+## AI SDLC（aisdlc）团队培训讲义
+
 ### 1. 培训目标与边界
 
 #### 1.1 你将掌握什么
@@ -51,7 +54,7 @@ markdown-sharing:
 
 ---
 
-### 3. 两条主线：你在做哪一种？
+### 3. 两条主线
 
 #### 3.1 项目级 Discover（存量项目逆向）
 
@@ -122,7 +125,13 @@ markdown-sharing:
 - R3：`prototype.md`（可选，ASCII 原型，消除交互歧义）
 - R4：Demo（可选，可交互走查）
 
-**开发链路（必做 I1–I2 + Finish）**：
+**设计决策链路（可选 D0–D2，整体可跳过）**：
+
+- D0：分流（判断是否跳过 design；跳过时 `plan.md` 补齐最小决策信息）
+- D1：`design/research.md`（可选，调研结论 + 验证清单）
+- D2：`design/design.md`（未跳过时必做，决策文档 / RFC）
+
+**开发执行链路（必做 I1–I2 + Finish）**：
 
 - I1：`implementation/plan.md`（**唯一执行清单与状态 SSOT**）
 - I2：按 `plan.md` 分批执行并回写状态/审计信息（状态只写回 `plan.md`）
@@ -264,7 +273,7 @@ markdown-sharing:
 
 ---
 
-### 9. 场景 → 技能选择速查（授课重点）
+### 9. 场景 → 技能选择速查
 
 #### 9.1 我现在在做“需求”还是“项目知识库”？
 

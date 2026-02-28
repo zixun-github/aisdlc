@@ -17,7 +17,7 @@ R3 的目标是把 `{FEATURE_DIR}/requirements/prd.md` 的**核心场景/规则/
 
 **开始时宣布：**「我正在使用 spec-product-prototype 技能基于 prd.md 生成可走查原型说明（prototype.md）。」
 
-> R3 不是强制步骤：若无交互变化或交互简单且明确，应按 PRD 的分流口径跳过 R3，直接进入 design。
+> R3 不是强制步骤：是否进入 R3 由 `using-aisdlc` 作为唯一路由器判定；本技能只在被路由到 R3 时执行。
 
 ## 何时使用 / 不使用
 
@@ -26,7 +26,7 @@ R3 的目标是把 `{FEATURE_DIR}/requirements/prd.md` 的**核心场景/规则/
 - **不要用在**
   - `spec-context` 失败（上下文定位失败）→ **立刻停止**
   - `{FEATURE_DIR}/requirements/prd.md` 缺失 → **停止并回到 R2**
-  - PRD 明确判定“可跳过 R3”（无交互变化/交互简单明确）→ **不要生成 `prototype.md`**；应在 PRD 写清最小交互结论后直接进入 design
+  - 如果你发现“此需求其实应跳过 R3”（无交互变化/交互简单明确）→ **停止并回到 `using-aisdlc`** 重新路由（本技能不得在内部改写路由结论）
 
 ## 输入 / 输出（落盘约定）
 
@@ -36,33 +36,22 @@ R3 的目标是把 `{FEATURE_DIR}/requirements/prd.md` 的**核心场景/规则/
   - `{FEATURE_DIR}/requirements/solution.md`（按需：验证清单引用/决策口径）
   - `{FEATURE_DIR}/requirements/raw.md`（按需：证据入口/原始措辞）
 - **写入**
-  - `{FEATURE_DIR}/requirements/prototype.md`（R3 产物，优先按模板生成）
+  - `{FEATURE_DIR}/requirements/prototype.md`（R3 产物，优先按模板生成；模板见 `<本SKILL.md目录>/assets/prototype-template.md`）
 
 ## 门禁（必须先过，否则停止）
 
-**REQUIRED SUB-SKILL：先执行 `spec-context` 并回显 `FEATURE_DIR=...`。**
-
-```powershell
-. ".\.aisdlc-cli\scirpts\spec-common.ps1"
-$context = Get-SpecContext
-$FEATURE_DIR = $context.FEATURE_DIR
-Write-Host "FEATURE_DIR=$FEATURE_DIR"
-```
+**REQUIRED SUB-SKILL：先满足 `spec-context` 门禁并回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
 
 - `spec-context` 失败 → **停止**
 - `{FEATURE_DIR}/requirements/prd.md` 缺失 → **停止**（不得“先出一版原型再说”）
 
 > 违反门禁=违反精神：无论“老板 10 分钟后评审/用户催/用户不想跑脚本”，都禁止猜路径、禁止在缺少 PRD 的情况下编造原型。
 
-## 核心流程（分流 → 结构化落盘 → 可追溯验证）
+## 核心流程（结构化落盘 → 可追溯验证；本技能不做下一步分流）
 
-### 0) 先做 R3 分流（强烈建议）
+### 0) 防呆校验：若不应进入 R3，则停止并回到 `using-aisdlc`
 
-若 PRD 已给出“跳过 R3”的结论（无交互变化/交互简单明确），则：
-
-- **不生成** `prototype.md`
-- 确保 PRD 已补齐最小交互结论（页面与入口、关键控件/字段与校验要点）
-- 直接进入 design 阶段
+若 PRD 明确表述“无需原型/R3 可跳过”，或你基于输入判断本次不应进入 R3，则停止并提示回到 `using-aisdlc`；由其决定在 `prd.md` 补齐最小交互结论或进入 design。
 
 ### 1) 从 PRD 提取“原型必须信息”（禁止新增决策）
 
@@ -77,20 +66,24 @@ Write-Host "FEATURE_DIR=$FEATURE_DIR"
 
 - **停止并回到 R2**（先把可交付规格补齐）
 
-### 2) 生成任务流（Mermaid）与节点编号
+### 2) 用模板生成/更新 `{FEATURE_DIR}/requirements/prototype.md`
+
+优先对齐模板：`<本SKILL.md目录>/assets/prototype-template.md`（只借结构，不把未知当已知）。下文 3–7 步为按模板填充各节的具体要求。
+
+### 3) 生成任务流（Mermaid）与节点编号
 
 - 节点编号：T-001…
 - 每个场景至少一条端到端主链路（成功/失败/取消/返回等关键分支）
 - 每个节点必须能落到页面/弹窗清单中的某个 Node ID
 
-### 3) 生成页面/弹窗清单（可定位）
+### 4) 生成页面/弹窗清单（可定位）
 
 - 页面：P-001…
 - 弹窗：D-001…
 - 抽屉：W-001…
 - 每个 Node 必须标注覆盖哪些 T-xxx、哪些场景、关联哪些 AC
 
-### 4) 逐页写“可实现”的页面说明（含 ASCII 线框）
+### 5) 逐页写“可实现”的页面说明（含 ASCII 线框）
 
 每个页面/节点一节，必须包含：
 
@@ -102,18 +95,20 @@ Write-Host "FEATURE_DIR=$FEATURE_DIR"
 
 > 用户偏好不能覆盖约束：即便用户觉得 ASCII“丑”，也必须输出 ASCII 线框以保证可移植、可评审、可追溯。可额外附 Figma 链接，但不能删掉 ASCII。
 
-### 5) 生成 AC → 交互节点映射（必须可追溯）
+### 6) 生成 AC → 交互节点映射（必须可追溯）
 
 要求：
 
 - PRD 的每条 AC 都必须映射到至少一个页面/节点与具体验证点（状态/文案/按钮可用性/跳转结果）
 - 不能映射的 AC：视为原型或 PRD 缺口 → **回流 R2 补齐**
 
-### 6) 写走查/验证脚本（闭环，而非一次性产物）
+### 7) 写走查/验证脚本（闭环，而非一次性产物）
 
 - 覆盖哪些验证清单条目（引用 PRD/solution 的编号）
 - 每个核心场景写一个任务脚本（目标→步骤→成功标准→观察点）
 - 明确回流规则：何种问题回流 R1/R2/R3
+
+完成后：回到 `using-aisdlc` 路由下一步。
 
 ## Quick reference（高频规则速查）
 
@@ -150,6 +145,3 @@ Write-Host "FEATURE_DIR=$FEATURE_DIR"
 - 任务流：T-001 进入 → T-002 填写 → T-003 提交成功 / T-004 校验失败
 - 页面：P-001 表单页（覆盖 T-001/T-002/T-003/T-004）
 - AC 映射：AC-001→P-001/错误态；AC-002→P-001/成功跳转
-
-> 模板入口：`skills/spec-product-prototype/prototype-template.md`
-

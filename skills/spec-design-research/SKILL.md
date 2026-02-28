@@ -8,7 +8,7 @@ description: Use when 需要在 Spec 级设计阶段执行 D1 research（产出 
 ## 概览
 
 本技能用于执行 Spec 级设计阶段的 **D1 research（可选）**：为 design 决策补足上下文与证据，并把未知收敛为**可执行的验证清单**，使 D2 可以直接引用结论而无需重复解释。  
-本技能既可独立使用（只做 D1），也可作为 `spec-design` 的子技能被调用（当 D0 判定“不跳过”且命中 D1 触发信号时）。
+本技能既可独立使用（只做 D1），也可在 `using-aisdlc` 的路由判定为“需要 D1”时被调用（本技能不做 D0/D1/D2 分流判断）。
 
 **开始时宣布：**「我正在使用 spec-design-research 技能进行设计调研并落盘 research.md。」
 
@@ -26,7 +26,7 @@ description: Use when 需要在 Spec 级设计阶段执行 D1 research（产出 
 ## 快速参考
 
 - **唯一落盘位置**：`{FEATURE_DIR}/design/research.md`
-- **最小化模板**：`skills/spec-design-research/research-template.md`（复制到上面路径再填写）
+- **最小化模板**：`<本SKILL.md目录>/assets/research-template.md`
 - **D1-DoD（缺一不可）**
   - 未知项不以“待确认问题”形式悬空：全部进入“风险与验证清单”
   - 研究结论可追溯，并能被 D2 直接引用（结论短、证据清、可复用）
@@ -40,15 +40,7 @@ description: Use when 需要在 Spec 级设计阶段执行 D1 research（产出 
 
 ### 0) 门禁：定位 `{FEATURE_DIR}`（必须）
 
-> 任何读写 `{FEATURE_DIR}/design/*.md` 之前，必须先执行 `spec-context`；失败立刻停止。
-
-```powershell
-$repoRoot = (git rev-parse --show-toplevel)
-. (Join-Path $repoRoot "skills\spec-context\spec-common.ps1")
-$context = Get-SpecContext
-$FEATURE_DIR = $context.FEATURE_DIR
-Write-Host "FEATURE_DIR=$FEATURE_DIR"
-```
+> 任何读写 `{FEATURE_DIR}/design/*.md` 之前，必须先满足 `spec-context` 门禁并回显 `FEATURE_DIR=...`（允许 `(reuse)`）；失败立刻停止。
 
 ### 1) 读取最小必要输入（缺失则停止）
 
@@ -63,12 +55,8 @@ Write-Host "FEATURE_DIR=$FEATURE_DIR"
 
 ### 2) D1 是否需要执行（自检；避免“为调研而调研”）
 
-若同时满足以下条件，可 **跳过 D1**（转入 D2）：
-
-- 关键不确定性已在 `solution.md` 或既有 `design/research.md` 中被证据化
-- 风险与验证清单已完整且可执行
-
-否则进入步骤 3 编写/更新 `design/research.md`。
+本技能作为 **D1 worker skill**：进入本技能即表示“路由已判定需要 D1”，因此本技能不再做“要不要做 D1”的判断。  
+若你在执行中发现：关键不确定性已经被证据化且无需继续 research，则应 **停止并回到 `using-aisdlc`** 重新路由，而不是在本技能内部改写路由结论。
 
 ### 3) 把“未知项”转成“假设 + 验证清单”（核心机制）
 
@@ -86,7 +74,7 @@ Write-Host "FEATURE_DIR=$FEATURE_DIR"
 
 **必须使用最小化模板**生成 research.md（避免结构漂移）：
 
-1) 复制 `skills/spec-design-research/research-template.md` 的内容  
+1) 复制 `<本SKILL.md目录>/assets/research-template.md` 的内容  
 2) 粘贴到 `{FEATURE_DIR}/design/research.md`  
 3) 按模板把占位符补齐（尤其是“验证清单”必须可执行）
 
@@ -99,6 +87,8 @@ Write-Host "FEATURE_DIR=$FEATURE_DIR"
 - TL;DR 中的推荐方向是“机制级一句话”，而非实现步骤
 - 每个关键结论都能追溯到：`solution.md`、contracts/ADR 索引或验证清单条目编号
 - 验证清单可直接映射到 D2 的“风险与验证清单”（Owner/截止/动作不丢失）
+
+完成后：回到 `using-aisdlc` 路由下一步（通常进入 D2：`spec-design`）。
 
 ## 红旗（出现任一即停止并纠偏）
 

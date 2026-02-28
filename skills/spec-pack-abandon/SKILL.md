@@ -22,7 +22,7 @@ description: Use when 需要因需求重大问题而废弃/撤销当前 Spec Pac
 
 ## 硬规则（必须遵守）
 
-- **REQUIRED SUB-SKILL：先执行 `spec-context` 并在对话中回显 `FEATURE_DIR=...`。**
+- **REQUIRED SUB-SKILL：先满足 `spec-context` 门禁并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
 - **禁止猜路径/猜分支**：只能使用 `Get-SpecContext` 的 `CURRENT_BRANCH` 与 `FEATURE_DIR`。
 - **必须输出删除清单**：在任何删除命令前，先输出“将要删除的内容清单”（目录/分支/远程分支存在性/未提交更改概览）。
 - **必须二次确认**：
@@ -37,7 +37,7 @@ description: Use when 需要因需求重大问题而废弃/撤销当前 Spec Pac
 > 本段只用于**生成清单与风险提示**，不执行删除。
 
 ```powershell
-. ".\skills\spec-context\spec-common.ps1"
+. (Join-Path (git rev-parse --show-toplevel) "skills\spec-context\scripts\spec-common.ps1")
 $context = Get-SpecContext
 $FEATURE_DIR = $context.FEATURE_DIR
 Write-Host ("FEATURE_DIR={0}" -f $FEATURE_DIR)
@@ -87,7 +87,7 @@ if ($aheadBehind) {
 > 本段仍然不执行删除；仅把“将要执行的命令”完整列出来作为第二次确认对象。
 
 ```powershell
-. ".\skills\spec-context\spec-common.ps1"
+. (Join-Path (git rev-parse --show-toplevel) "skills\spec-context\scripts\spec-common.ps1")
 $context = Get-SpecContext
 $branch = $context.CURRENT_BRANCH
 $featureDir = $context.FEATURE_DIR

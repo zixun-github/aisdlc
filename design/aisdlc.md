@@ -44,6 +44,15 @@ markdown-sharing:
 - **模版（Template）**：原子 Spec 的固定骨架（Frontmatter + 正文最小闭环）
 - **门禁（Gates）**：DoR/DoD、结构完整、引用/追溯齐全、契约/测试/发布校验
 
+### 编排层（Router）与执行层（Worker Skills）
+
+在 Spec Pack 场景下，必须区分两类能力，避免“每个技能各自决定下一步”导致分流口径分散、互相打架：
+
+- **编排层（Router）**：只负责“下一步判断/分流”，输出唯一的下一步指令。  
+  - 本仓库以 `skills/using-aisdlc/SKILL.md` 作为 Spec Pack 流程的**唯一路由器（Router）**。
+- **执行层（Worker Skills）**：只负责本阶段门禁 + 产物落盘 + DoD 自检，**不做下一步分流决策**。  
+  - 任一 worker skill 完成后，统一回到 `using-aisdlc` 重新路由；若发现“不应进入本步骤”，应停止并提示回到 `using-aisdlc` 纠正路由，而不是在技能内部改写流程。
+
 **落地位置（目录约定）**：
 
 - `.aisdlc/workflows/`：工作流定义（YAML/JSON）
@@ -246,7 +255,7 @@ markdown-sharing:
 3. **影响分析（需求落点，R1 完成后自动执行）**：
    - 基于 `requirements/solution.md` 的目标/范围，从 `products/index.md` 和 `components/index.md` 匹配受影响模块
    - 提取受影响模块的 TL;DR 摘要、API/Data 不变量、相关 ADR
-   - 输出影响报告写入 `specs/<DEMAND-ID>/index.md` 的 `## Impact Analysis`
+   - 输出影响报告写入 `specs/<DEMAND-ID>/requirements/solution.md#impact-analysis`
    - 后续 D2/I1/I2 阶段以此为约束输入，避免遗漏关键依赖与不变量
 
 4. **按需（需求级 Spec Pack）**：
@@ -297,7 +306,7 @@ markdown-sharing:
   - 从 `components/index.md` 匹配受影响的应用组件
   - 从匹配到的 `components/{module}.md` 提取需遵守的 API/Data 不变量
   - 从 `adr/index.md` 提取可能受影响的历史决策
-- **输出**：写入 `specs/{id}/index.md` 的 `## Impact Analysis`：
+- **输出**：写入 `specs/{id}/requirements/solution.md#impact-analysis`：
   - 受影响模块清单（Products + Components）
   - 需遵守的不变量（从模块页 API/Data Contract 提取）
   - 相关 ADR（可能约束设计方向）

@@ -24,7 +24,7 @@
 |--------|------|
 | **新增「知识消费机制」章节** | 在"需求 Spec Pack 生命周期"前，新增大章节，含四个核心子机制 |
 | 上下文注入协议（Context Injection Protocol） | 定义每个 Spec 阶段必须注入的项目级上下文切片（R1/D0/D2/I1 各有明确表格），将"按需/如存在"升级为"强制/缺失标注 `CONTEXT GAP`"；给出最小可用→进阶→远期三级落地路径 |
-| 需求影响分析（Impact Analysis） | R1 完成后自动从知识库提取受影响模块、需遵守的不变量、相关 ADR、跨模块影响，写入 `index.md#impact-analysis`；定义为项目知识库最高 ROI 的消费场景 |
+| 需求影响分析（Impact Analysis） | R1 完成后自动从知识库提取受影响模块、需遵守的不变量、相关 ADR、跨模块影响，写入 `requirements/solution.md#impact-analysis`；定义为项目知识库最高 ROI 的消费场景 |
 | 知识增量演进 | 定义 Delta Discover（增量逆向）、Staleness Detection（过期检测）、Merge-back 触发校验三种机制 |
 | 知识质量度量 | 定义覆盖率、链接可达率、知识利用率、知识新鲜度四个可量化指标 |
 | **应用组件模板增强** | 新增 TL;DR（决策级摘要）、变更热力（Change Frequency）、关键状态机与领域事件三个字段 |
@@ -47,7 +47,7 @@
 |--------|------|
 | **渐进式披露升级** | 项目级从"先读"改为"强制"，明确列出 4 项必读文件（`product.md`、`glossary.md`、`products/index.md`、`components/index.md`），读取失败标注 `CONTEXT GAP` |
 | **R1 输入强化** | 项目级资源从"glossary 如有"升级为 4 项必读（product.md、glossary.md、products/index.md、涉及模块 TL;DR） |
-| **新增 R1.5：需求影响分析** | 完整定义：目标、输入（solution.md + 项目知识库必读）、输出（`index.md#impact-analysis` 含受影响模块表格/不变量/ADR/跨模块影响/Context Gaps）、门禁、下一步 |
+| **新增 R1.5：需求影响分析** | 完整定义：目标、输入（solution.md + 项目知识库必读）、输出（`requirements/solution.md#impact-analysis` 含受影响模块表格/不变量/ADR/跨模块影响/Context Gaps）、门禁、下一步 |
 | **流程表/Skill 表/路径更新** | 模块清单表、Skill 工作流表、最短路径、常规路径全部增加 R1.5 步骤 |
 
 ### 4. `aisdlc_spec_design.md`（设计决策 SOP）
@@ -55,7 +55,7 @@
 | 变更项 | 说明 |
 |--------|------|
 | **渐进式披露升级** | D2 必须读取受影响模块的**完整内容**（不仅是索引）以及相关 ADR 全文；读取失败标注 `CONTEXT GAP` |
-| **D2 输入强化** | 新增影响分析（`index.md#impact-analysis`）为必读；项目级资源升级为强制 |
+| **D2 输入强化** | 新增影响分析（`requirements/solution.md#impact-analysis`）为必读；项目级资源升级为强制 |
 | **D2 模板新增「与现有系统的对齐」** | 必填段落：契约兼容性声明、ADR 合规声明、状态机/事件影响、跨模块影响确认——确保设计不违反现有系统约束 |
 | **D2 DoD 新增** | "与现有系统的对齐已完成"检查项 |
 

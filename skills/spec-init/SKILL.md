@@ -26,7 +26,7 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 - **统一输出位置**：`.aisdlc/specs/{num}-{short-name}/`
 - **必备子目录**：`requirements/`、`design/`、`implementation/`、`verification/`、`release/`
 - **初始文件**：`requirements/raw.md`（内容=原始需求；编码=UTF-8 with BOM）
-- **脚本位置**：脚本与本 `SKILL.md` 同目录
+- **脚本位置**：`<本SKILL.md目录>/scripts/`
 - **脚本入口（PowerShell）**：`spec-create-branch.ps1` 的 `Main`（需 PowerShell 7+）
 - **脚本入口（Bash）**：`spec-create-branch.sh`（命令行参数见 `--help`）
 - **自动选择规则**：在 Windows/PowerShell 环境优先使用 PowerShell；在 macOS/Linux 的 bash 环境使用 Bash 版本（两者行为对齐，差别仅在调用方式与返回值形态）。
@@ -119,9 +119,9 @@ source_file_path="$raw_file"
 - `.aisdlc/specs/<branchName>/requirements/raw.md` 存在，内容等于原始需求（注意文件头有 UTF-8 BOM）。
 - 传入的源文件已被删除（这不是 bug；若用户需要保留，应在步骤 1 之前自行备份）。
 
-### 5) 完成后：自动进入 `spec-product-clarify`（R1）
+### 5) 完成后：回到 `using-aisdlc` 路由下一步
 
-**强制衔接规则**：`spec-init` 的 DoD 通过后，不要停在“提示下一步”，而是**立刻进入 R1**（澄清 + 方案对比 + 推荐决策），直到产出 `requirements/solution.md` 或用户明确停止。
+`spec-init` 的 DoD 通过后，本技能不再“自动衔接”到任何下游技能；请回到 `using-aisdlc` 作为**唯一路由器**决定下一步（通常先 `spec-context`，再路由到 R1：`spec-product-clarify`）。
 
 
 ## 常见错误（以及怎么避免）

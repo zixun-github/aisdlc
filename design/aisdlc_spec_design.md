@@ -18,6 +18,10 @@ principles_ref: design/aisdlc.md
   - **design（必做）**：产出 `design/design.md`（design 阶段 SSOT）。
 - **不设“详细设计”子阶段**：契约/数据模型等属于“按需附件/对外承诺落盘”；实现细节归入 implementation 的 `plan.md/tasks.md`。
 
+> **路由权威说明（重要）**：D0（是否跳过 design）、D1（是否需要 research）、D2（是否进入 RFC）等“下一步判断/分流”由 `skills/using-aisdlc/SKILL.md` 作为唯一路由器判定；本 SOP 负责给出口径与 DoD，具体执行时由路由选择相应 worker skill：\n
+> - D1：`spec-design-research` → `{FEATURE_DIR}/design/research.md`\n
+> - D2：`spec-design` → `{FEATURE_DIR}/design/design.md`\n
+
 ---
 
 ### 2. 产物落盘与“渐进式披露”的读取顺序
@@ -42,12 +46,12 @@ principles_ref: design/aisdlc.md
   - `project/memory/*`（业务/技术/结构/术语）
   - `project/components/index.md`（应用组件地图 + 跨模块依赖关系图）
   - `project/adr/index.md`（架构决策索引）
-  - **受影响模块的完整内容**：从 `specs/{id}/index.md#impact-analysis`（R1.5 产出）获取受影响模块清单，读取对应 `project/components/{module}.md` 的**全部内容**（含 TL;DR、API/Data Contract 不变量、状态机/领域事件、Evidence）——D2 必须显式声明与这些模块现有契约的关系
+  - **受影响模块的完整内容**：从 `specs/{id}/requirements/solution.md#impact-analysis`（R1.5 产出）获取受影响模块清单，读取对应 `project/components/{module}.md` 的**全部内容**（含 TL;DR、API/Data Contract 不变量、状态机/领域事件、Evidence）——D2 必须显式声明与这些模块现有契约的关系
   - **相关 ADR 全文**：从影响分析中获取相关 ADR 编号，读取 `project/adr/{adr-id}.md` 全文——确保设计不违反历史决策
   - 读取失败或不存在时显式标注为 `CONTEXT GAP`（而非静默跳过）
 - **按需（需求级）**：仅在明确处理某个 `<DEMAND-ID>` 时读取该需求的最小必要材料：
   - **需求路径**：`requirements/solution.md`、`requirements/prd.md`（可选）、`requirements/prototype.md`（可选）
-  - **影响分析**：`specs/{id}/index.md#impact-analysis`（R1.5 产出，必读）
+  - **影响分析**：`specs/{id}/requirements/solution.md#impact-analysis`（R1.5 产出，必读）
   - **设计路径**：`design/design.md`（若已存在）与 `design/research.md`（可选）
 - **回写（入库）**：每个模块独立产出一个文件（或一个章节），保持可替换与可审计。
 
@@ -71,9 +75,9 @@ principles_ref: design/aisdlc.md
 
 | 模块 ID | 模块名称 | 主要目标 | 关键输出（落盘） |
 |---|---|---|---|
-| D0 | 分流：是否跳过 design 阶段 | 用清晰口径判断“直接进入 implementation”还是“进入 research/design”，并在跳过时声明 implementation 必补齐项 | （不落盘或写入 `design/design.md/## 分流结论`） |
-| D1 | research（可选） | 为关键不确定性补足上下文：现状、约束、风险、未知项与研究结论 | （可选）`design/research.md` |
-| D2 | design（必做；仅当未跳过） | 产出可评审的决策文档（RFC），冻结边界与关键决策，并为 implementation 提供权威输入 | `design/design.md` |
+| D0 | 分流：是否跳过 design 阶段 | 用清晰口径判断“直接进入 implementation”还是“进入 research/design”，并在跳过时声明 implementation 必补齐项 | （路由结论由 using-aisdlc 输出；不强制落盘） |
+| D1 | research（可选） | 为关键不确定性补足上下文：现状、约束、风险、未知项与研究结论 | `design/research.md`（由 `spec-design-research` 落盘） |
+| D2 | design（必做；仅当未跳过） | 产出可评审的决策文档（RFC），冻结边界与关键决策，并为 implementation 提供权威输入 | `design/design.md`（由 `spec-design` 落盘） |
 
 #### 3.2 最短路径（建议先跑通）
 
@@ -167,7 +171,7 @@ principles_ref: design/aisdlc.md
 
 - **门禁**：先执行 `spec-context` 获取 `FEATURE_DIR`（失败即停止；见 2.3/3.3）
 - **需求路径**：`{FEATURE_DIR}/requirements/solution.md`（必需）与（可选）`prd.md/prototype.md`
-- **影响分析（必读）**：`{FEATURE_DIR}/index.md#impact-analysis`（R1.5 产出），获取受影响模块清单与需遵守的不变量
+- **影响分析（必读）**：`{FEATURE_DIR}/requirements/solution.md#impact-analysis`（R1.5 产出），获取受影响模块清单与需遵守的不变量
 - （可选）`{FEATURE_DIR}/design/research.md`
 - **项目级（强制，对齐上下文注入协议）**：
   - `project/memory/*`（业务/技术/结构/术语）
@@ -197,7 +201,7 @@ principles_ref: design/aisdlc.md
   - **跨模块影响确认**：基于依赖关系图，确认所有受影响的上下游模块已被考虑
 - **影响分析（必填）**：上下游系统、数据口径、运行与运维影响、迁移/回滚要点（按需）
 - **风险与验证清单（必填）**：风险/假设 → 验证方式 → 成功/失败信号 → Owner → 截止 → 下一步动作
-- **追溯链接（必填）**：`requirements/solution.md`（以及 `prd.md/prototype.md` 如适用）、`index.md#impact-analysis`（R1.5 产出）、相关组件页契约段落/ADR 入口
+- **追溯链接（必填）**：`requirements/solution.md`（以及 `prd.md/prototype.md` 如适用）、`requirements/solution.md#impact-analysis`（R1.5 产出）、相关组件页契约段落/ADR 入口
 
 #### 6.4 质量门槛（D2-DoD）
 

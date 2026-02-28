@@ -159,7 +159,7 @@ principles_ref: design/aisdlc.md
 
 ### 3.5 第 3 步：调用 PowerShell 脚本执行完整流程
 
-调用 PowerShell 脚本 `scirpts/spec-create-branch.ps1` 的 `Main` 函数，传递以下参数：
+调用 PowerShell 脚本 `skills/spec-init/scripts/spec-create-branch.ps1` 的 `Main` 函数，传递以下参数：
 
 - **`ShortName`**（必需）：第 2 步生成的短名称
 - **`SourceFilePath`**（必需）：第 1.5 步确定的需求文件路径

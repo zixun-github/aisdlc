@@ -40,11 +40,11 @@ principles_ref: design/aisdlc.md
 
 - **必读（项目级，强制，对齐上下文注入协议）**：
   - `project/memory/*`（业务/技术/结构/术语）
-  - 受影响模块的 `project/components/{module}.md` 的 API/Data 契约段落 + Evidence 入口（从 `index.md#impact-analysis` 获取受影响模块清单）
+  - 受影响模块的 `project/components/{module}.md` 的 API/Data 契约段落 + Evidence 入口（从 `requirements/solution.md#impact-analysis` 获取受影响模块清单）
   - 相关 ADR（从影响分析获取）
   - 读取失败时标注 `CONTEXT GAP`
 - **按需（需求级）**：仅在明确处理某个 `<DEMAND-ID>` 时读取该需求的：
-  - **影响分析（必读）**：`specs/{id}/index.md#impact-analysis`（R1.5 产出，获取受影响模块与不变量）
+  - **影响分析（必读）**：`specs/{id}/requirements/solution.md#impact-analysis`（R1.5 产出，获取受影响模块与不变量）
   - **需求路径**：`requirements/*`（包含 `solution.md` 或 `prd.md`）
   - **设计路径**：`design/*`（包含 `design.md` 或 `solution.md`）
 - **实现阶段 SSOT**：`implementation/plan.md`（唯一执行清单与状态来源）
@@ -54,7 +54,7 @@ principles_ref: design/aisdlc.md
 
 对齐 `design/aisdlc_spec_init.md` 中的“上下文自动识别机制”要求，所有 spec 级命令在执行前必须先获取当前 spec 相关上下文信息：
 
-- 调用脚本函数 `Get-SpecContext`（位于 `.aisdlc-cli/scirpts/spec-common.ps1`）
+- 调用脚本函数 `Get-SpecContext`（位于 `skills/spec-context/scripts/spec-common.ps1`）
 - 获取 `REPO_ROOT`、`CURRENT_BRANCH`、`FEATURE_DIR`、`SPEC_NUMBER`、`SHORT_NAME`
 - 基于 `FEATURE_DIR` 自动定位输入/输出路径，例如：
   - `implementation/plan.md` → `{FEATURE_DIR}/implementation/plan.md`
@@ -72,14 +72,15 @@ principles_ref: design/aisdlc.md
 说明：
 - **最小输入**：`requirements/solution.md` 或 `requirements/prd.md`（至少其一）
 - **门禁要求**：若输入不足，必须在 `plan.md` 中标注 “NEEDS CLARIFICATION”，并阻断进入 I2
+- **路由权威**：本阶段的“下一步”由 `using-aisdlc` 作为唯一路由器判定；I1/I2 是 worker skill，完成后统一回到 `using-aisdlc` 重新路由（通常 I1→I2→Finish）。
 
 ---
 
-## 3.1 技能占位符（将被重写；本次仅占位）
+## 3.1 技能职责边界（I1/I2 为 worker skill）
 
-实现阶段 SOP 以“技能”为执行单元。本次**不编写/不重写技能**，仅在本文档中写入占位符名称与职责边界，便于后续先写技能再落地自动化/对话模板。
+实现阶段 SOP 以“技能”为执行单元；技能定义文件作为执行约束的 SSOT。本文档在此只明确 I1/I2 的职责边界与链路关系，避免在多个技能里各自发明“下一步路由”口径。
 
-### 3.1.1 占位符技能清单
+### 3.1.1 技能清单
 
 - **`spec-implementation-plan`**：生成 `{FEATURE_DIR}/implementation/plan.md`（唯一 SSOT；包含任务清单与状态）。
   - **逆向来源（仅参考）**：`skills/writing-plans/SKILL.md`
@@ -126,7 +127,7 @@ flowchart TD
 ### 5.2 输入
 
 - **需求路径**：`requirements/solution.md` / `requirements/prd.md`
-- **影响分析（必读）**：`{FEATURE_DIR}/index.md#impact-analysis`（R1.5 产出），获取受影响模块清单、需遵守的不变量、相关 ADR
+- **影响分析（必读）**：`{FEATURE_DIR}/requirements/solution.md#impact-analysis`（R1.5 产出），获取受影响模块清单、需遵守的不变量、相关 ADR
 - **设计路径**：`design/design.md`（如存在；含"与现有系统的对齐"声明）
 - **项目级资源（强制，对齐上下文注入协议）**：
   - `project/memory/*`（业务/技术/结构/术语）
@@ -150,7 +151,7 @@ flowchart TD
 **范围：** In / Out
 **架构：** [2–3 句方法说明 + 关键约束]
 **验收口径：** [引用 requirements/solution.md 或 requirements/prd.md 的 AC/验收点]
-**影响范围：** [引用 index.md#impact-analysis 的受影响模块清单]
+**影响范围：** [引用 requirements/solution.md#impact-analysis 的受影响模块清单]
 **需遵守的不变量：** [从影响分析提取的关键 API/Data 契约不变量]
 
 ---
@@ -161,7 +162,7 @@ flowchart TD
 - **TL;DR**：一句话概括计划目标与范围
 - **范围与边界**：In/Out（对齐需求与设计）
 - **影响范围与约束（基于 R1.5 影响分析，必填）**：
-  - 受影响模块清单及影响类型（引用 `index.md#impact-analysis`）
+  - 受影响模块清单及影响类型（引用 `requirements/solution.md#impact-analysis`）
   - 需遵守的 API/Data 契约不变量（逐条列出，标注来源模块）
   - 需遵守的状态机/领域事件约束（如涉及）
   - 跨模块影响与协调事项
@@ -215,7 +216,7 @@ flowchart TD
 - 里程碑明确且可验收（每一项有对应产物或可验证标准）
 - 依赖与风险已列出，并有最小验证/缓解动作
 - 关键验收口径可追溯（至少引用 `prd.md` 或 `solution.md`）
-- **影响范围与约束已注入**：`plan.md` 包含"影响范围与约束"段落，受影响模块与需遵守的不变量已从 `index.md#impact-analysis` 提取并逐条列出
+- **影响范围与约束已注入**：`plan.md` 包含"影响范围与约束"段落，受影响模块与需遵守的不变量已从 `requirements/solution.md#impact-analysis` 提取并逐条列出
 - `plan.md` 内存在“任务清单（SSOT）”，且每个任务包含：文件路径、验收点、最小验证方式、提交点与审计信息
 - 任何不确定项均标注为 “NEEDS CLARIFICATION”，且未消除前不得进入 I2
 
@@ -231,7 +232,7 @@ flowchart TD
 
 - `{FEATURE_DIR}/implementation/plan.md`（必须；SSOT，含"影响范围与约束"段落）
 - `requirements/*`、`design/*`（按 `plan.md` 中引用路径按需读取）
-- `{FEATURE_DIR}/index.md#impact-analysis`（R1.5 产出，按需回查受影响模块与不变量）
+- `{FEATURE_DIR}/requirements/solution.md#impact-analysis`（R1.5 产出，按需回查受影响模块与不变量）
 - 项目级受影响模块的 `project/components/{module}.md`（API/Data 契约段落，**只读**，用于实现时校验不变量合规）
 
 ### 6.3 输出（执行过程回写；以 `plan.md` 为唯一状态来源）
