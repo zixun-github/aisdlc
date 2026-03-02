@@ -5,8 +5,6 @@ status: draft
 
 # <page_name>（<page_id>）
 
-> 面向产品阅读：先看“页面概览/核心任务/关键规则”。技术映射与代码证据在附录，供研发复核。
-
 ## 页面概览（产品视角）
 
 - 所属模块（按菜单分组）：<module_name｜未归类>
@@ -18,8 +16,6 @@ status: draft
 
 ## 页面面包屑（Breadcrumb）
 
-> 用于快速定位“页面在产品结构中的位置”。优先来源：页面自身面包屑组件渲染/路由 meta/breadcrumb 配置；缺失则写入 Evidence Gaps。
-
 - <模块>
 - <子模块（可选）>
 - <页面名称>
@@ -27,13 +23,6 @@ status: draft
 ## 页面线框图（ASCII Wireframe）
 
 **硬要求：必须生成本节线框图**（除非页面完全无法证据化还原，此时写入 Evidence Gaps 并说明缺失来源）。
-
-目标：用纯 ASCII 尽可能还原页面信息与交互（接近原型图），让读者不看代码也能理解：
-- 页面区块与信息架构（模块/标题/区块）
-- 关键字段（标签、输入控件、默认值/占位）
-- 主要操作（按钮、批量操作、行内操作）
-- 列表/表格（列名、关键展示字段）
-- 状态（空态/加载/错误/无权限）与关键弹窗（确认/编辑/详情）
 
 ```txt
 +----------------------------------------------------------------------------------+
@@ -95,7 +84,7 @@ status: draft
 - FP-001: ...
   - 说明：...
   - 用户价值：...
-  - 证据（附录引用）：file:lines 或见“附录 B”
+  - 证据：见“附录：证据（最精简）”
 
 ## 用户旅程（User journeys）
 
@@ -103,7 +92,7 @@ status: draft
   - 触发：...
   - 成功标准：...
   - 异常分支：...
-  - 证据（附录引用）：file:lines 或见“附录 B”
+  - 证据：见“附录：证据（最精简）”
 
 ## 业务规则（Rules）
 
@@ -116,28 +105,21 @@ status: draft
     - file:lines
   evidence_gaps: []
 
-## 附录 A：技术映射（供研发复核）
+## 附录：证据（最精简）
+
+### A) 关键字段的证据（最小映射）
 
 - page_id: <page_id>
 - module_name: <module_name｜未归类>
 - page_name: <page_name>
-- page_name_evidence: file:lines（优先来自页面头部标题/Document.title；缺失则写 Evidence Gap）
-- route_forms: ...
-- normalized_path: ...
-- entry_file: ...
-- layout/shell: ...
-- reachability: public|guarded|direct-link|internal-only|unknown
-- auth（如有）：...（仅在证据足够时写）
-- data_deps（如有）：...（仅写页面级关键依赖）
+- page_name_evidence: file:lines（优先：页面头部标题/Document.title）
 
-## 附录 B：Evidence（最小证据包）
+### B) 证据列表（按需追加）
 
-- type: page_title | route_decl | file_convention | menu_static | menu_backend | nav_call | guard | api_call | state_machine | form_validation | other
-  strength: strong | medium | weak
+- type: page_title | route_decl | menu_static | menu_backend | breadcrumb | nav_call | guard | api_call | form_validation | state_machine | other
   file: ...
   lines: ...
-  how: ...
-  excerpt: ...
+  excerpt: ...（1–3 行关键摘录）
 
 ## Evidence Gaps（本页）
 
