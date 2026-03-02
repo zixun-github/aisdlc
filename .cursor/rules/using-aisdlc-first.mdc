@@ -1,0 +1,23 @@
+---
+description: Spec Pack 开发优先使用 using-aisdlc（路由+门禁）
+alwaysApply: true
+---
+
+# Spec Pack 对话路由规则（强制）
+
+只要对话**哪怕有 1%** 可能涉及本仓库的 AI SDLC / Spec Pack（例如提到 `Spec Pack`、`.aisdlc/specs/`、`raw/solution/prd/prototype/demo`、`design/*`、`implementation/plan.md`、`spec-init/spec-context` 等），必须先以 `skills/using-aisdlc/SKILL.md` 作为**唯一路由器（Router）**决定下一步要用的 worker skill 与产物落盘路径。
+
+## 硬门禁（不得跳过）
+
+- **先上下文，再读写**：任何将要读写以下路径（或其子路径）之前，必须先执行 `spec-context` 并在对话中回显 `FEATURE_DIR=...`；若失败，必须停止，只能输出“阻断原因 + 需要的输入/下一步”。
+  - `{FEATURE_DIR}/requirements/*`
+  - `{FEATURE_DIR}/design/*`
+  - `{FEATURE_DIR}/implementation/*`
+  - `{REPO_ROOT}/demo/prototypes/{CURRENT_BRANCH}/*`
+- **禁止猜测**：不得根据用户口头路径/分支名/截图“猜” `FEATURE_DIR` 或目录结构直接写文件。
+- **一次一阶段**：禁止把 PRD+原型+Demo 或 计划+实现 一次性糅在一起；必须由 Router 分阶段落盘并回流闭环。
+
+## 命令与提交约定（本仓库默认）
+
+- **PowerShell**：同一行多个命令使用 `;`，不要用 `&&`。
+- **提交信息**：如需生成 git commit message，必须使用中文。

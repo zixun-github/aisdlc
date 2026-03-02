@@ -1,7 +1,8 @@
-#Requires -Version 7.0
+﻿#Requires -Version 5.0
 # PowerShell 脚本：Spec 级命令的通用上下文信息获取
 # 功能：获取和验证 REPO_ROOT、CURRENT_BRANCH、FEATURE_DIR 等上下文信息
-Set-StrictMode -Version Latest
+# 兼容 PowerShell 5.0（Windows PowerShell）
+Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 # 设置输出编码为 UTF-8 with BOM
@@ -22,7 +23,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 function Get-RepoRoot {
     try {
         $result = git rev-parse --show-toplevel 2>$null
-        if ($LASTEXITCODE -eq 0 -and $result) {
+        if ($? -and $result) {
             return $result.Trim()
         }
     } catch {
@@ -45,7 +46,7 @@ function Get-RepoRoot {
 function Get-CurrentBranch {
     try {
         $result = git branch --show-current 2>$null
-        if ($LASTEXITCODE -eq 0 -and $result) {
+        if ($? -and $result) {
             return $result.Trim()
         }
     } catch {

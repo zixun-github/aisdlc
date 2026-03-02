@@ -9,14 +9,12 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 
 `spec-init` 用于在本仓库里创建一个新的需求级 Spec Pack：自动递增三位编号、创建并切换到 `{num}-{short-name}` 分支、生成 `.aisdlc/specs/{num}-{short-name}/` 目录结构，并把原始需求写入 `requirements/raw.md`（UTF-8 with BOM）。
 
-**开始时宣布：**「我正在使用 spec-init 技能初始化新的 Spec Pack（创建分支与 requirements/raw.md）。」
-
 ## 何时使用 / 不使用
 
 - **使用时机**
   - 用户要开始一个“新需求”的 Spec（还没有 `{num}-{short-name}` 分支与 `.aisdlc/specs/...` 目录）。
   - 用户只给了中文需求文本（不方便先手动建文件），担心参数编码导致乱码。
-  - 需要确保分支命名、编号来源、目录结构与后续命令（如 `spec-product-clarify`）一致。
+  - 需要确保分支命名、编号来源、目录结构符合仓库约定。
 - **不要用在**
   - 已经在一个合法的 `{num}-{short-name}` spec 分支上，且 `.aisdlc/specs/{num}-{short-name}/` 已存在并结构完整（这时直接进入后续命令）。
 
@@ -27,28 +25,18 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 - **必备子目录**：`requirements/`、`design/`、`implementation/`、`verification/`、`release/`
 - **初始文件**：`requirements/raw.md`（内容=原始需求；编码=UTF-8 with BOM）
 - **脚本位置**：`<本SKILL.md目录>/scripts/`
-- **脚本入口（PowerShell）**：`spec-create-branch.ps1` 的 `Main`（需 PowerShell 7+）
-- **脚本入口（Bash）**：`spec-create-branch.sh`（命令行参数见 `--help`）
-- **自动选择规则**：在 Windows/PowerShell 环境优先使用 PowerShell；在 macOS/Linux 的 bash 环境使用 Bash 版本（两者行为对齐，差别仅在调用方式与返回值形态）。
-- **脚本参数（PowerShell）**
-  - `-ShortName`（必需）
-  - `-SourceFilePath`（必需，必须是文件路径）
-  - `-Title`（可选）
-- **参数拷贝红旗**：不要直接复制下文 `Main ... -SourceFilePath $sourceFilePath` 就运行；`$sourceFilePath` 必须先按“步骤 1”准备成**已存在的文件路径**。
-- **脚本参数（Bash）**
-  - `--short-name`（必需）
-  - `--source-file`（必需，必须是文件路径）
-  - `--title`（可选）
-- **关键副作用**：脚本执行成功后会删除传入的源文件（PowerShell：`SourceFilePath`；Bash：`--source-file`；无论是原始文件还是临时文件）。
+- **脚本入口（PowerShell）**：`spec-create-branch.ps1` 的 `Main`（需 PowerShell 5.0+）
+- **脚本入口（Bash）**：`spec-create-branch.sh`（命令行参数见 `--help`；stdout 输出 JSON）
+- **关键副作用**：脚本执行成功后会删除传入的源文件（无论是原始文件还是临时文件）。
 
 ## 实施步骤（Agent 行为规范）
 
 ### 0) 预检（不要跳过）
 
 - 确认当前工作目录在目标 Git 仓库内（**在仓库任意子目录都可以**；只要 `git rev-parse --show-toplevel` 能成功）。
-- **PowerShell 路径**：确认 PowerShell 版本满足脚本要求（脚本声明 `#Requires -Version 7.0`）。
-- **Bash 路径**：确认 `bash` 可用，且有 `git`、`head`、`tail`、`mktemp`（脚本用于 BOM 处理与临时文件）。
-- 如果用户提供的是“文件路径”，提醒：该文件会被脚本删除；如需保留，先复制一份再传入。
+- **PowerShell 路径**：确认 PowerShell 版本满足脚本要求（脚本声明 `#Requires -Version 5.0`）。
+- **Bash 路径**：确认 `bash` 可用，且有 `git`、`head`、`tail`、`mktemp`。
+- 如果用户提供的是“文件路径”，必须明确告知：该文件会被脚本删除；如需保留，先复制一份再传入。
 
 ### 1) 解析用户输入 → 一律落到文件路径
 
@@ -95,7 +83,7 @@ source_file_path="$raw_file"
 **按操作系统自动选择脚本实现（不要硬跑“另一种”）。**
 
 - Windows / PowerShell：用 dot sourcing 加载 `spec-create-branch.ps1` 并调用 `Main`
-- macOS/Linux / Bash：直接执行 `spec-create-branch.sh`（输出 JSON）
+- macOS/Linux / Bash：直接执行 `spec-create-branch.sh`（stdout 输出 JSON）
 
 **执行参数（只填参数即可）**
 
@@ -119,33 +107,11 @@ source_file_path="$raw_file"
 - `.aisdlc/specs/<branchName>/requirements/raw.md` 存在，内容等于原始需求（注意文件头有 UTF-8 BOM）。
 - 传入的源文件已被删除（这不是 bug；若用户需要保留，应在步骤 1 之前自行备份）。
 
-### 5) 完成后：直接进入 R1（`spec-product-clarify`），无需 `using-aisdlc`
+### 5) 完成后：自动执行 `spec-product-clarify`（不要停在中间）
 
-`spec-init` 的 DoD 通过后，默认直接串联进入需求澄清 R1：
+`spec-init` 的 DoD 通过后，必须立刻继续执行（不等待用户追加指令）：
 
-- 下一步（固定）：先执行 `spec-context` 并回显 `FEATURE_DIR=...`
-- 然后进入：`spec-product-clarify`（基于 `requirements/raw.md` 产出 `requirements/solution.md`，含 `#impact-analysis`）
-
-> 说明：本技能只做“进入 R1”的固定衔接，不做 D0/D1/D2/I1/I2 等后续路径选择；后续如需分流，再回到 `using-aisdlc`。
-
-## 完成后输出（供自动推进读取）
-
-在回答末尾追加以下两段（不要省略）：
-
-- 「本阶段产物已落盘。下一步将直接进入 `spec-context → spec-product-clarify`（无需 `using-aisdlc`）。」
-- `ROUTER_SUMMARY`：
-
-```yaml
-ROUTER_SUMMARY:
-  stage: R0
-  artifacts:
-    - ".aisdlc/specs/{num}-{short-name}/requirements/raw.md"
-  needs_human_review: false
-  blocked: false
-  block_reason: ""
-  notes: "DoD 通过后固定进入 R1：spec-context → spec-product-clarify"
-```
-
+- 立即进入 `spec-product-clarify`
 
 ## 常见错误（以及怎么避免）
 

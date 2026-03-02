@@ -1,7 +1,8 @@
-#Requires -Version 7.0
+﻿#Requires -Version 5.0
 # PowerShell 脚本：创建 spec 工作分支和目录
 # 功能：查找最大编号、创建分支、创建目录结构、初始化文件
-Set-StrictMode -Version Latest
+# 兼容 PowerShell 5.0（Windows PowerShell）
+Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
 # 设置输出编码为 UTF-8 with BOM
@@ -16,7 +17,7 @@ function Resolve-RepoRoot {
   # 使用 git 命令获取仓库根目录
   try {
     $repoRoot = git rev-parse --show-toplevel 2>&1
-    if ($LASTEXITCODE -eq 0 -and $repoRoot) {
+    if ($? -and $repoRoot) {
       $repoRoot = (Resolve-Path $repoRoot).Path
       Write-Host "仓库根目录: $repoRoot" -ForegroundColor Cyan
       return $repoRoot
@@ -133,7 +134,7 @@ function Create-SpecBranch {
   # 创建分支
   Write-Host "正在创建分支: $branchName"
   git checkout -b $branchName 2>&1 | Out-Null
-  if ($LASTEXITCODE -ne 0) {
+  if (-not $?) {
     throw "创建分支失败: git checkout -b $branchName"
   }
   

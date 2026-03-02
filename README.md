@@ -85,6 +85,7 @@ npx skills add https://github.com/zixun-github/aisdlc --skill '*' --agent claude
 
 - **快捷方式**
   - 不确定下一步怎么选：using-aisdlc
+  - 在 Cursor 中：本仓库内置规则 `.cursor/rules/using-aisdlc-first.mdc`，会在 Spec Pack 相关对话中强制优先使用 `using-aisdlc` 作为路由器，并要求先通过 `spec-context` 门禁再读写落盘文件。
 
 ---
 
