@@ -130,7 +130,7 @@ markdown-sharing:
         plan.md                    # 实现计划
         tasks.md                   # 任务分解
       verification                 # 测试验证阶段
-        plan.md                    # 测试计划
+        test-plan.md               # 测试计划
         usecase.md                 # 测试用例
         report.md                  # 测试报告
       release                      # 发布运维阶段
