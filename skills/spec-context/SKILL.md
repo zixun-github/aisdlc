@@ -1,101 +1,71 @@
 ---
 name: spec-context
-description: Use when 需要在 sdlc-dev 的 Spec 流程中定位当前 spec pack（FEATURE_DIR）、避免在错误目录读写 requirements/*.md，或出现“看错上下文/写错文件/分支不符合规范”的问题。
+description: Use when 需要在 sdlc-dev 的 Spec 流程中定位当前 spec pack（FEATURE_DIR）、避免在错误目录读写 requirements/*.md，或出现"看错上下文/写错文件/分支不符合规范"的问题。
 ---
 
 # Spec 上下文定位（FEATURE_DIR）
 
 ## 概览
 
-在任何 Spec 命令/技能里，只要会读写 `requirements/*.md`，就必须先确定 `{FEATURE_DIR}`。本仓库以 **当前 Git 分支名**作为 spec pack 的定位锚点，禁止猜路径。
+读写 `requirements/*.md` 前必须先确定 `{FEATURE_DIR}`。以**当前 Git 分支名**为锚点，禁止猜路径。
 
 **开始时宣布：**「我正在使用 spec-context 技能定位当前 Spec Pack（FEATURE_DIR）。」
 
 ## 何时使用
 
-- 你将要读/写：`{FEATURE_DIR}/requirements/raw.md | solution.md | prd.md | prototype.md`
-- 你不确定当前处于哪个 spec pack（担心读写错目录）
-- 你看到“分支名不规范 / 目录结构不完整 / 缺 .aisdlc”之类上下文错误
+- 将读/写 `{FEATURE_DIR}/requirements/*.md`
+- 不确定当前 spec pack 或出现分支/目录/`.aisdlc` 相关上下文错误
 
-## 唯一做法（PowerShell / Bash）
+## 做法：复用 $FEATURE_DIR，否则执行脚本
 
-在 Windows/PowerShell 环境用 PowerShell 版；在 macOS/Linux 或 Git Bash 环境用 Bash 版（两者校验规则对齐）。
+**优先复用**：若本会话已成功回显过 `FEATURE_DIR=...`，且 `$FEATURE_DIR` 非空、目录存在且含 `requirements/`，则直接复用并回显 `FEATURE_DIR=... (reuse)`。
+
+**否则**：执行脚本定位并回显 `FEATURE_DIR=...`。
+
+**脚本目录处理**：
+
+- **脚本位置**：`<本SKILL.md目录>/scripts/`
+- **执行方式**：按操作系统选择脚本实现（Windows/PowerShell 用 `spec-common.ps1`；macOS/Linux/Bash 用 `spec-common.sh`）
+- **路径约束**：不要依赖当前工作目录（cwd）；优先通过 `$SKILL_DIR` / `SKILL_DIR` 组装脚本绝对路径再加载
 
 ### PowerShell
 
 ```powershell
-. ".\scripts\spec-common.ps1"
-$context = Get-SpecContext -SkillName "<caller-skill-name>"
-$FEATURE_DIR = $context.FEATURE_DIR
-Write-Host "FEATURE_DIR=$FEATURE_DIR"
-```
-
-> **必须传递 `-SkillName`**：将 `<caller-skill-name>` 替换为**你当前正在执行的技能**的名称（即调动你执行 spec-context 的那个技能）。例如：从 `spec-implementation-plan` 进入则传 `-SkillName "spec-implementation-plan"`；从 `using-aisdlc` 进入则传 `-SkillName "using-aisdlc"`。不传或照抄占位符时埋点会记录为 `unknown`，视为违规。
-
-### Bash
-
-```bash
-source "./scripts/spec-common.sh"
-get_spec_context
-echo "FEATURE_DIR=$FEATURE_DIR"
-```
-
-## 会话复用（串联多个技能时允许不重复跑脚本）
-
-当你在**同一个会话**里连续执行多个技能时，理论上第一个技能已经拿到了 `FEATURE_DIR`。为减少重复，你可以在后续技能里**复用**该值，但必须满足以下条件：
-
-- 已在本会话中**成功**回显过一次 `FEATURE_DIR=...`（作为证据）
-- 当前 `$FEATURE_DIR` / `${FEATURE_DIR}` **非空**
-- `FEATURE_DIR` 指向的目录存在，且至少包含 `requirements/` 子目录（最小防呆校验）
-
-任一条件不满足，就必须回退为“运行脚本定位”的方式。
-
-### PowerShell（复用优先，否则回退脚本）
-
-```powershell
+$SKILL_DIR = "<本SKILL.md目录>"
 if ($null -ne $FEATURE_DIR -and (Test-Path $FEATURE_DIR) -and (Test-Path (Join-Path $FEATURE_DIR "requirements"))) {
   Write-Host "FEATURE_DIR=$FEATURE_DIR (reuse)"
 } else {
-  . ".\scripts\spec-common.ps1"
+  . (Join-Path $SKILL_DIR "scripts/spec-common.ps1")
   $context = Get-SpecContext -SkillName "<caller-skill-name>"
   $FEATURE_DIR = $context.FEATURE_DIR
   Write-Host "FEATURE_DIR=$FEATURE_DIR"
 }
 ```
 
-> 回退到脚本时，同样**必须**将 `<caller-skill-name>` 替换为当前执行的技能名称。
-
-### Bash（复用优先，否则回退脚本）
+### Bash
 
 ```bash
+SKILL_DIR="<本SKILL.md目录>"
 if [[ -n "${FEATURE_DIR:-}" && -d "$FEATURE_DIR" && -d "$FEATURE_DIR/requirements" ]]; then
   echo "FEATURE_DIR=$FEATURE_DIR (reuse)"
 else
-  source "./scripts/spec-common.sh"
+  source "$SKILL_DIR/scripts/spec-common.sh"
   get_spec_context
   echo "FEATURE_DIR=$FEATURE_DIR"
 fi
 ```
 
-## 硬规则（必须遵守）
-- **必须传 `-SkillName`**：调用 `Get-SpecContext` 时**禁止**省略 `-SkillName` 或照抄占位符 `<caller-skill-name>`；必须替换为当前执行的技能名称（如 `spec-implementation-plan`、`using-aisdlc`）。
-- **脚本路径**：给定为 **`<本SKILL.md目录>/scripts/`**（即与本 SKILL.md 同级的 `scripts/` 目录）。
-- **脚本位置**：`scripts/spec-common.ps1`、`scripts/spec-common.sh`（相对该 scripts 目录）。
-- **先定位再读写（两种合规路径）**：任何读/写 `requirements/*.md` 之前，必须先回显 `FEATURE_DIR=...`，且只能通过以下两种方式之一达成：
-  - **会话首次/不确定时**：运行上面的脚本定位并回显 `FEATURE_DIR=...`。
-  - **同一会话复用时**：允许不运行脚本，但必须满足“会话复用”的全部条件，并以 `FEATURE_DIR=... (reuse)` 的形式回显（作为证据）。
-- **失败就停止**：PowerShell 的 `Get-SpecContext` 或 Bash 片段任意一步报错时，必须立刻停止，不得继续生成/写文件内容（否则几乎必然跑偏上下文）。
-- **只用 FEATURE_DIR 拼路径**：后续所有路径都必须以 `$FEATURE_DIR`（PowerShell）或 `${FEATURE_DIR}`（Bash）为前缀（禁止用当前工作目录做相对路径猜测）。
+> **`-SkillName`**：将 `<caller-skill-name>` 替换为当前执行的技能名（如 `spec-implementation-plan`）。  
+> **`$SKILL_DIR` / `SKILL_DIR`**：表示“当前 `SKILL.md` 所在目录”，用于稳定定位 `scripts/`，避免因 cwd 漂移导致脚本加载失败。
 
-## 常见错误
+## 硬规则
 
-- **未传 `-SkillName` 或照抄占位符**：调用 `Get-SpecContext` 时省略 `-SkillName` 或照抄 `<caller-skill-name>` 字面量；必须替换为当前技能名称（如 `spec-implementation-plan`）。
-- **在非 spec 分支上执行**：分支名不符合 `{num}-{short-name}`，会导致无法定位 spec pack。
-- **手写 `.aisdlc/specs/...` 路径**：人会写错，AI 更容易写错；必须以脚本输出为准。
-- **继续执行“生成文档”**：只要上下文失败，就停止并先修复分支/目录结构。
+- 读写 `requirements/*.md` 前必须先回显 `FEATURE_DIR=...`（复用或脚本二选一）
+- 脚本失败则立即停止，不得继续写文件
+- 后续路径一律以 `$FEATURE_DIR` / `${FEATURE_DIR}` 为前缀
 
-## Red Flags（发现即停止并修正）
+## 常见错误与 Red Flags
 
-- 执行 `Get-SpecContext` 时未传 `-SkillName`
-- 传了 `-SkillName "<caller-skill-name>"` 字面量而未替换
-
+- 未传 `-SkillName` 或照抄 `<caller-skill-name>` 字面量
+- 非 spec 分支（分支名不符合 `{num}-{short-name}`）
+- 手写 `.aisdlc/specs/...` 路径；上下文失败后仍继续生成
