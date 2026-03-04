@@ -5,6 +5,8 @@ markdown-sharing:
 
 # AI SDLC 产品需求流程用户手册
 
+* 安装: [参考文档](https://markdown.fzzixun.com/d/9ad9e4f3-f0ac-40f2-ad7d-e4676a39dafe)
+
 ## 这份手册适合谁
 
 这份手册面向产品经理、业务分析、设计、研发、测试，以及所有参与需求到交付闭环的同学。  
