@@ -17,6 +17,7 @@
 
 - “出测试计划 / 测试用例 / 测试套件 / 测试报告”
 - “进入 QA / 验收 / 验证 / 回归”
+- “写缺陷 / 缺陷报告 / bug / 记录缺陷”
 
 并且满足前置：已有需求输入（`requirements/solution.md` 或 `requirements/prd.md` 至少其一）。
 
@@ -65,3 +66,10 @@
 命名兼容策略（Router 侧）：
 
 - 若版本未知：允许 `report-{date}-unknown.md` 并要求在报告中标注 `CONTEXT GAP: version/build unknown`。
+
+### Vx：缺陷报告（`spec-test-bug`，可插入）
+
+当用户意图是“写缺陷/缺陷报告/bug/记录缺陷”时，Router 可在 V1–V4 任意节点**插入** `spec-test-bug`：
+
+- `spec-test-bug` 输出面向外部缺陷系统的“可粘贴缺陷报告正文”，**不在 Spec Pack 内落盘 bug 文件/目录**。
+- 外部缺陷创建/更新后，要求将 `BUG-ID/链接/状态/严重程度/关联 TC` 回写到本轮 `verification/report-*.md`（缺陷清单/阻断项）。

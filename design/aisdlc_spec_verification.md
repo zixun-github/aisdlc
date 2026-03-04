@@ -18,8 +18,8 @@ principles_ref: design/aisdlc.md
 > 重要边界：
 >
 > - **“本次需求的执行计划”属于 implementation 阶段（I1）**：`{FEATURE_DIR}/implementation/plan.md`（见 `design/aisdlc_spec_implementation.md`）。
-> - 本文档的 verification 阶段只定义 **验证侧的产物与门禁**（文档产物为主），不要求在本阶段实现自动化测试代码。
-> - 但 `usecase` 必须为后续生成自动化脚本做好结构化准备（见 5.2）。
+> - 本文档的 verification 阶段只定义 **验证侧的产物与门禁**（文档产物为主），默认以**手工测试执行**为准，不要求在本阶段实现自动化测试代码。
+> - `usecase` 的结构化要求面向“可复用与可迁移”（例如未来生成自动化脚本/用例管理导入），但这属于**可选增强**，不是本阶段交付门槛（见 5.2）。
 
 ---
 
@@ -87,6 +87,7 @@ principles_ref: design/aisdlc.md
 
 - 对简单需求，V3 可并入 V2（在 `usecase.md` 中直接维护“套件定义”小节）。
 - 对影响面明确且需控风险的需求，建议补齐 V3（回归范围/冒烟阻断更清晰）。
+- 默认以**手工执行**跑通最短闭环；是否补自动化不在本阶段强制范围内。
 
 #### 3.3 通用门禁与收敛规则（V1–V4）
 
@@ -108,22 +109,25 @@ principles_ref: design/aisdlc.md
   - `spec-test-usecase` → 生成/更新 `verification/usecase.md`
   - `spec-test-suites` → 生成/更新 `verification/suites.md`
   - `spec-test-execute` → 执行验证并产出 `verification/report-{date}-{version}.md`
+  - `spec-bug`（仅占位）→ 缺陷报告（对接团队缺陷系统/Issue），并将缺陷引用回写到本轮 `report-*.md`（见 5.4）
 
 路由权威对齐 `design/aisdlc.md`：
 
-- “下一步做什么/是否跳过/走哪条链路”的决策 **只由** `using-aisdlc` 作为 Router 做出。
-- `spec-test` / `spec-test-*` 是 **worker skill**：只负责门禁 + 产物落盘 + DoD 自检；完成后统一回到 `using-aisdlc` 路由下一步。
+- verification 阶段内（V1–V4）“下一步做什么/是否跳过”的决策 **由 `spec-test` 自身路由**（不依赖 `using-aisdlc`）。
+- `spec-test-*` 是 **worker 子技能**：只负责门禁 + 产物落盘 + DoD 自检；完成后将摘要交回 `spec-test` 继续路由推进。
 
 #### 4.0 模块与子技能对照（建议）
 
-| 模块 | 使用的子技能 | 产物（落盘） | 下一步（由 using-aisdlc 路由） |
+| 模块 | 使用的子技能 | 产物（落盘） | 下一步（由 spec-test 路由） |
 |---|---|---|---|
-| V1 | `spec-test-plan` | `{FEATURE_DIR}/verification/test-plan.md` | 回到 `using-aisdlc` |
-| V2 | `spec-test-usecase` | `{FEATURE_DIR}/verification/usecase.md` | 回到 `using-aisdlc` |
-| V3 | `spec-test-suites` | `{FEATURE_DIR}/verification/suites.md` | 回到 `using-aisdlc` |
-| V4 | `spec-test-execute` | `{FEATURE_DIR}/verification/report-{date}-{version}.md` | 回到 `using-aisdlc` |
+| V1 | `spec-test-plan` | `{FEATURE_DIR}/verification/test-plan.md` | 回到 `spec-test` |
+| V2 | `spec-test-usecase` | `{FEATURE_DIR}/verification/usecase.md` | 回到 `spec-test` |
+| V3 | `spec-test-suites` | `{FEATURE_DIR}/verification/suites.md` | 回到 `spec-test` |
+| V4 | `spec-test-execute` | `{FEATURE_DIR}/verification/report-{date}-{version}.md` | 回到 `spec-test` |
 
-> 建议输出约定：任一 `spec-test-*` 完成后，结尾输出 `ROUTER_SUMMARY`（参考 `skills/using-aisdlc/SKILL.md` 的约定），便于 Router 自动推进，但子技能本身不得在内部决定“下一步路由”。
+> 建议输出约定：任一 `spec-test-*` 完成后，结尾输出 `SPEC_TEST_SUMMARY`（YAML 形态），便于 `spec-test` 自动推进；子技能本身不得在内部决定“下一步路由”。
+
+
 
 #### 4.1 与 `qa-test-planner` 的关系（仅基线）
 
@@ -173,7 +177,7 @@ principles_ref: design/aisdlc.md
 
 #### 5.2 V2：测试用例（`verification/usecase.md`）
 
-**目标**：把 AC 转成可执行步骤与预期结果；用例结构必须可被机器提取，以支持后续生成自动化脚本（不绑定框架）。
+**目标**：把 AC 转成可执行步骤与预期结果，默认用于**手工执行**；同时保持结构稳定，便于后续复用（例如用例管理导入或生成自动化脚本，但不绑定框架、不作为本阶段门槛）。
 
 **输入（最小）**：
 
@@ -182,7 +186,7 @@ principles_ref: design/aisdlc.md
 
 **输出（落盘）**：`{FEATURE_DIR}/verification/usecase.md`
 
-**用例结构要求（自动化友好，强制）**：
+**用例结构要求（手工可执行 + 可迁移，强制）**：
 
 - **稳定编号**：`TC-<DOMAIN>-<NNN>`（例如 `TC-AUTH-001`）；编号一旦发布给协作方，不随意改动
 - **类型与标签**：`type`（UI/API/集成/回归）+ `tags`（影响面/模块/风险）
@@ -284,6 +288,19 @@ principles_ref: design/aisdlc.md
 - 缺陷清单（仅引用：缺陷系统/Issue 编号 + 链接 + 状态 + 严重程度；不在 Spec Pack 内落盘 BUG 文件）
 - 遗留风险与建议（是否可交付、是否需要返工、是否需要补测）
 - 追溯链接（requirements/design/implementation/关键变更）
+
+**手工测试执行（推荐用法）**：
+
+- 当本轮主要以**手工**方式执行用例时，`spec-test-execute` 生成的 `report-{date}-{version}.md` 不仅是“结论输出物”，也应作为**执行跟踪载体**（一次测试轮次的事实记录），至少包含：
+  - 用例执行明细（按套件/优先级聚合也可）：用例编号、执行人、时间、结果（Pass/Fail/Blocked/Skipped）、关键证据（截图/日志/录像链接或定位信息）
+  - 失败/阻断项到用例编号的映射（确保“失败原因”不漂移成自由文本）
+
+**缺陷报告与回写（强制）**：
+
+- 缺陷必须由团队既有缺陷系统/Issue/工单承载；在 Spec Pack 中**不新增** BUG 文件/目录。
+- 提交缺陷时可使用 `spec-bug`（仅占位）生成“缺陷报告草稿/字段校验清单”，并在缺陷创建后把以下信息**回写到本轮 `report-*.md` 的缺陷清单**：
+  - 缺陷编号与链接、标题、严重程度/优先级、当前状态、影响版本/环境
+  - 关联用例编号（至少 1 条），以及对“结论/准出标准”的影响（是否阻断交付）
 
 **质量门槛（V4-DoD）**：
 

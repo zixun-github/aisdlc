@@ -1,0 +1,31 @@
+---
+description: Skills must reference resources via skill-relative paths
+alwaysApply: true
+---
+
+# 技能资源路径规则（可移植）
+
+适用场景：编写或修改 `skills/**/SKILL.md` 与其配套 `assets`/`router` 文档时。
+
+## 强制要求
+
+- 技能内部引用模板/资源路径时，必须使用**相对技能目录**的路径。
+- 禁止在技能说明中写仓库根路径式引用（如 `skills/<name>/assets/...`）。
+- 技能安装到使用方项目后，路径必须可直接解析，不依赖当前仓库结构。
+
+## 推荐写法
+
+- 同技能目录资源：`assets/<file>.md`
+- Router 子文档：`router/<file>.md`
+- 子目录资源：`assets/templates/<file>.md`
+
+## 禁止写法
+
+- `skills/spec-test-plan/assets/test_plan_template.md`
+- `E:/dev/tools/sdlc-dev/skills/...`
+
+## 变更自检
+
+- 检查 `SKILL.md` 中是否仍存在 `skills/` 前缀资源引用。
+- 确认新加模板默认不做语言版本拆分（无需 `_zh`/`_en` 后缀），除非用户明确要求。
+
