@@ -43,7 +43,7 @@ description: Use when 需要在 Spec 级设计阶段执行 D1 research（产出 
 
 ### 0) 门禁：定位 `{FEATURE_DIR}`（必须）
 
-**REQUIRED SUB-SKILL：先满足 `spec-context` 门禁并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
+**REQUIRED SUB-SKILL：正在执行 `spec-context` 获取上下文，并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
 
 
 ### 1) 读取最小必要输入（缺失则停止）

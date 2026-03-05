@@ -7,13 +7,13 @@ status: draft
 落盘位置：`{FEATURE_DIR}/implementation/plan.md`
 
 > 约束：
-> - 必须先 `spec-context` 拿到 `FEATURE_DIR=...`，失败即停止
+> - 必须先执行 `spec-context` 获取上下文，拿到 `FEATURE_DIR=...`，失败即停止
 > - 不写“待确认问题清单”；所有不确定性只写在 `## NEEDS CLARIFICATION`（未消除前不得进入 I2）
 
 # [需求名] 实现计划（SSOT）
 
 > **必需技能：** `spec-execute`（按批次执行本计划）
-> **上下文门禁：** 必须先用 `spec-context` 定位 `{FEATURE_DIR}`，失败即停止
+> **上下文获取：** 必须先执行 `spec-context` 获取上下文，定位 `{FEATURE_DIR}`，失败即停止
 
 **目标：** [一句话描述要交付什么]  
 **范围：** In / Out  

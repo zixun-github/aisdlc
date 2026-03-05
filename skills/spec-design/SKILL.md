@@ -24,7 +24,7 @@ description: Use when 需要为某个 Spec Pack 产出 D2 决策文档（RFC/Dec
 
 ## 快速参考
 
-- **硬门禁（第一优先级）**：任何读写 `{FEATURE_DIR}/design/*.md` 之前，必须先满足 `spec-context` 门禁并回显 `FEATURE_DIR=...`（允许 `(reuse)`）；失败立刻停止。
+- **硬门禁（第一优先级）**：任何读写 `{FEATURE_DIR}/design/*.md` 之前，必须先执行 `spec-context` 获取上下文并回显 `FEATURE_DIR=...`（允许 `(reuse)`）；失败立刻停止。
 - **D2 强制输入（第二优先级）**：D2 必须读取 `{FEATURE_DIR}/requirements/solution.md#impact-analysis`，并据此强制读取受影响模块组件页全文与相关 ADR 全文；读不到必须显式标注 `CONTEXT GAP`，不得静默跳过。
 - **输出位置**
   - D2（必做，未跳过时）：`{FEATURE_DIR}/design/design.md`
@@ -38,7 +38,7 @@ description: Use when 需要为某个 Spec Pack 产出 D2 决策文档（RFC/Dec
 
 ### 0) 门禁（必须先过，否则停止）
 
-**REQUIRED SUB-SKILL：先满足 `spec-context` 门禁并回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
+**REQUIRED SUB-SKILL：正在执行 `spec-context` 获取上下文，并回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
 
 - `spec-context` 失败 → **停止**
 
@@ -131,7 +131,7 @@ description: Use when 需要为某个 Spec Pack 产出 D2 决策文档（RFC/Dec
 ## 常见错误（以及修复）
 
 - **错误**：在压力下“先写了再说”，先生成文档再补输入。  
-  **修复**：先过 `spec-context` 与 `solution.md` 门禁；缺失就停止，写清楚阻塞项。
+  **修复**：先执行 `spec-context` 获取上下文，并满足 `solution.md` 门禁；缺失就停止，写清楚阻塞项。
 - **错误**：把 research 当成“查资料”，写了很多背景但没有验证清单。  
   **修复**：把未知全部转成“风险/假设 → 验证方式 → 信号 → Owner/截止/动作”。
 - **错误**：PM 要求把任务/接口/表结构写进设计，于是混层。  

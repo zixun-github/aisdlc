@@ -40,7 +40,7 @@ R3 的目标是把 `{FEATURE_DIR}/requirements/prd.md` 的**核心场景/规则/
 
 ## 门禁（必须先过，否则停止）
 
-**REQUIRED SUB-SKILL：先满足 `spec-context` 门禁并回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
+**REQUIRED SUB-SKILL：正在执行 `spec-context` 获取上下文，并回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
 
 - `spec-context` 失败 → **停止**
 - `{FEATURE_DIR}/requirements/prd.md` 缺失 → **停止**（不得“先出一版原型再说”）
@@ -135,7 +135,7 @@ ROUTER_SUMMARY:
 ## Quick reference（高频规则速查）
 
 - **必须**
-  - 先跑 `spec-context`，只用 `FEATURE_DIR` 拼路径
+  - 先执行 `spec-context` 获取上下文，只用 `FEATURE_DIR` 拼路径
   - 必须存在 `prd.md` 且可提取出场景 + AC +（至少一份）验证清单
   - `prototype.md` 必须包含：任务流（T-xxx）、页面清单（P/D/W-xxx）、逐页 ASCII 线框、AC 映射、走查脚本
 - **禁止**

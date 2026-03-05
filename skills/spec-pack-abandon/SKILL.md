@@ -7,7 +7,7 @@ description: Use when 需要因需求重大问题而废弃/撤销当前 Spec Pac
 
 ## 概览
 
-当需求出现重大问题需要“废弃当前 spec pack”时，本技能用于**安全地撤销**：先用 `spec-context` 精确定位 `{FEATURE_DIR}`，再生成“将要删除的内容清单”，并在执行任何破坏性操作前要求用户**二次确认**；最后删除本地/远程分支，并清理工作区中残留的 spec pack 目录。
+当需求出现重大问题需要“废弃当前 spec pack”时，本技能用于**安全地撤销**：先执行 `spec-context` 获取上下文并精确定位 `{FEATURE_DIR}`，再生成“将要删除的内容清单”，并在执行任何破坏性操作前要求用户**二次确认**；最后删除本地/远程分支，并清理工作区中残留的 spec pack 目录。
 
 **开始时宣布：**「我正在使用 spec-pack-abandon 技能废弃当前 Spec Pack（输出删除清单并二次确认后删除目录与分支）。」
 
@@ -22,7 +22,7 @@ description: Use when 需要因需求重大问题而废弃/撤销当前 Spec Pac
 
 ## 硬规则（必须遵守）
 
-- **REQUIRED SUB-SKILL：先满足 `spec-context` 门禁并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
+- **REQUIRED SUB-SKILL：正在执行 `spec-context` 获取上下文，并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
 - **禁止猜路径/猜分支**：只能使用 `Get-SpecContext` 的 `CURRENT_BRANCH` 与 `FEATURE_DIR`。
 - **必须输出删除清单**：在任何删除命令前，先输出“将要删除的内容清单”（目录/分支/远程分支存在性/未提交更改概览）。
 - **必须二次确认**：

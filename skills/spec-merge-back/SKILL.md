@@ -28,7 +28,7 @@ Merge-back 是 Spec Pack 生命周期的“晋升阶段”：把本次需求中*
 
 ### Gate 0: 必须定位 FEATURE_DIR（禁止口头路径）
 
-**REQUIRED SUB-SKILL：先满足 `spec-context` 门禁并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
+**REQUIRED SUB-SKILL：正在执行 `spec-context` 获取上下文，并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
 
 
 **失败即停止**：`Get-SpecContext` 报错就停止，不允许“先写一版/先猜路径”。

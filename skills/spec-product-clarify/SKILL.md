@@ -26,7 +26,7 @@ description: Use when 在 sdlc-dev 的 spec 分支上需要完成 R1（raw→sol
 
 ### 步骤 0：门禁检查（不通过就停止）
 
-**REQUIRED SUB-SKILL：先满足 `spec-context` 门禁并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
+**REQUIRED SUB-SKILL：正在执行 `spec-context` 获取上下文，并在对话中回显 `FEATURE_DIR=...`（允许 `(reuse)`）。**
 
 同时必须满足：
 - `{FEATURE_DIR}/requirements/raw.md` 存在且非空
@@ -161,7 +161,7 @@ ROUTER_SUMMARY:
 ## 集成
 
 **必需子技能：**
-- `spec-context`（门禁：回显 `FEATURE_DIR=...`）
+- `spec-context`（获取上下文：回显 `FEATURE_DIR=...`）
 
 **可选（仅当 Impact Analysis 因项目知识库缺口无法进行时）：**
 - `project-discover-preflight-scope`
