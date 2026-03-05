@@ -22,15 +22,14 @@ npx skills add https://github.com/zixun-github/aisdlc --skill '*' --agent claude
 
 ```
 
-### （可选）git push 时自动执行安装/更新
 
-Git 没有标准的 `post-push` hook。本仓库提供了 `pre-push` hook，用来在你执行 `git push` 时自动运行一次：
+### 创建项目级索引库
 
 ```
-npx skills add https://github.com/zixun-github/aisdlc --skill "*" --agent claude-code cursor --yes --copy --global
+/project-discover
 ```
 
-### 最短的使用方式
+### 需求开发
 
 ```
 # 开始新的需求或BUG修复(会自动创建开发分支)
