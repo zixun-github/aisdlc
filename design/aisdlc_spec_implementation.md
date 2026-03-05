@@ -82,9 +82,9 @@ principles_ref: design/aisdlc.md
 
 ### 3.1.1 技能清单
 
-- **`spec-implementation-plan`**：生成 `{FEATURE_DIR}/implementation/plan.md`（唯一 SSOT；包含任务清单与状态）。
+- **`spec-plan`**：生成 `{FEATURE_DIR}/implementation/plan.md`（唯一 SSOT；包含任务清单与状态）。
   - **逆向来源（仅参考）**：`skills/writing-plans/SKILL.md`
-- **`spec-implementation-execute`**：按 `{FEATURE_DIR}/implementation/plan.md` 分批执行并在检查点汇报；阻塞即停。
+- **`spec-execute`**：按 `{FEATURE_DIR}/implementation/plan.md` 分批执行并在检查点汇报；阻塞即停。
   - **逆向来源（仅参考）**：`skills/executing-plans/SKILL.md`
 
 ### 3.1.2 技能链路（概念图）
@@ -92,8 +92,8 @@ principles_ref: design/aisdlc.md
 ```mermaid
 flowchart TD
   specContext[spec-context_Get-SpecContext] --> planDoc[implementation_plan_md_SSOT]
-  planDoc --> implPlan[spec-implementation-plan]
-  planDoc --> implExec[spec-implementation-execute]
+  planDoc --> implPlan[spec-plan]
+  planDoc --> implExec[spec-execute]
 ```
 
 ---
@@ -139,12 +139,12 @@ flowchart TD
 
 #### 5.3.1 `plan.md` 头部（必须）
 
-> 下面是占位符技能 `spec-implementation-plan` 对 `plan.md` 的最小头部结构要求（参考 `writing-plans` 的思路，但输出位置改为 Spec Pack）。
+> 下面是占位符技能 `spec-plan` 对 `plan.md` 的最小头部结构要求（参考 `writing-plans` 的思路，但输出位置改为 Spec Pack）。
 
 ```markdown
 # [需求名] 实现计划（SSOT）
 
-> **必需技能：** `spec-implementation-execute`（按批次执行本计划）
+> **必需技能：** `spec-execute`（按批次执行本计划）
 > **上下文门禁：** 必须先用 `spec-context` 定位 `{FEATURE_DIR}`，失败即停止
 
 **目标：** [一句话描述要交付什么]
@@ -249,7 +249,7 @@ flowchart TD
 
 > 说明：本 SOP 不强制新增额外执行日志文件；如需要更细审计，可在 `implementation/` 下增补 `execution-log.md`，但 `plan.md` 仍是唯一的执行清单与状态来源。
 
-### 6.4 执行节奏（批次 + 检查点；对应占位符技能 `spec-implementation-execute`）
+### 6.4 执行节奏（批次 + 检查点；对应占位符技能 `spec-execute`）
 
 1. **加载并严格审查计划（Review）**
    - 读取 `{FEATURE_DIR}/implementation/plan.md`

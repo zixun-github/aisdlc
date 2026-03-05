@@ -151,7 +151,7 @@ digraph process {
 
 **必需工作流技能：**
 - **spec-init** - 必需：开始前设置隔离工作区
-- **spec-implementation-plan** - 创建本技能所执行的计划
+- **spec-plan** - 创建本技能所执行的计划
 - **requesting-code-review** - 审查者子智能体的代码审查模板
 - **finishing-development** - 所有任务完成后做开发收尾确认
 
@@ -159,4 +159,4 @@ digraph process {
 - **test-driven-development** - 子智能体对每任务遵循 TDD
 
 **替代工作流：**
-- **spec-implementation-execute** - 用于并行会话而非同会话执行
+- **spec-execute** - 用于并行会话而非同会话执行

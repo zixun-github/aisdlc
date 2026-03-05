@@ -152,7 +152,7 @@ ROUTER_SUMMARY:
   needs_human_review: true
   blocked: false
   block_reason: ""
-  notes: "RFC 建议评审通过后再进入 I1（spec-implementation-plan）"
+  notes: "RFC 建议评审通过后再进入 I1（spec-plan）"
 ```
 
 2. **立即执行 `using-aisdlc`**：将上述 `ROUTER_SUMMARY` 作为路由输入传递给 using-aisdlc，由 Router 判定下一步并**自动推进**（无需等待用户说「继续」）。  

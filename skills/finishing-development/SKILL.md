@@ -130,7 +130,7 @@ git diff --stat
 
 **被调用于：**
 - **subagent-driven-development** - 所有任务完成后，用于最终验证
-- **spec-implementation-execute** 类流程的最后一步，用于收尾确认
+- **spec-execute** 类流程的最后一步，用于收尾确认
 
 ## 完成后输出与自动路由（必须执行）
 

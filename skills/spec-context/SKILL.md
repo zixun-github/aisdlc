@@ -55,7 +55,7 @@ else
 fi
 ```
 
-> **`-SkillName`**：将 `<caller-skill-name>` 替换为当前执行的技能名（如 `spec-implementation-plan`）。  
+> **`-SkillName`**：将 `<caller-skill-name>` 替换为当前执行的技能名（如 `spec-plan`）。  
 > **`$SKILL_DIR` / `SKILL_DIR`**：表示“当前 `SKILL.md` 所在目录”，用于稳定定位 `scripts/`，避免因 cwd 漂移导致脚本加载失败。
 
 ## 硬规则

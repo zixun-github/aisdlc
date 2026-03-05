@@ -12,7 +12,7 @@ status: draft
 
 # [需求名] 实现计划（SSOT）
 
-> **必需技能：** `spec-implementation-execute`（按批次执行本计划）
+> **必需技能：** `spec-execute`（按批次执行本计划）
 > **上下文门禁：** 必须先用 `spec-context` 定位 `{FEATURE_DIR}`，失败即停止
 
 **目标：** [一句话描述要交付什么]  

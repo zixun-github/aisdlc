@@ -10,7 +10,7 @@
 
 ### 进入 I1（实现计划）的路由口径
 
-当用户意图包含以下任一信号，Router 应进入 I1（`spec-implementation-plan`）：
+当用户意图包含以下任一信号，Router 应进入 I1（`spec-plan`）：
 
 - “出实现计划 / plan.md / 任务拆分 / 开发计划”
 - “开始开发 / 改代码 / 开始实现 / 跑通闭环”
@@ -23,7 +23,7 @@ I1 的最小输入要求（Router 侧判定用）：
 
 ### 进入 I2（执行实现）的路由口径
 
-只有当以下条件同时满足时，Router 才进入 I2（`spec-implementation-execute`）：
+只有当以下条件同时满足时，Router 才进入 I2（`spec-execute`）：
 
 - `{FEATURE_DIR}/implementation/plan.md` 已存在且可执行（无关键缺口阻塞）。
 - 用户意图明确包含“开始实现/改代码/交付完成/跑通闭环”等“要进入执行”的信号。
@@ -34,8 +34,8 @@ I1 的最小输入要求（Router 侧判定用）：
 
 一旦 `{FEATURE_DIR}/implementation/plan.md` 已落盘，Router 应视为进入实现链路：
 
-- 后续默认候选步骤只允许：`spec-implementation-execute` → `finishing-development`。
-- 不得把 `spec-product-prd` / `spec-product-prototype` / `spec-product-demo` 或 `spec-implementation-plan` 再列为“后续可选步骤”。
+- 后续默认候选步骤只允许：`spec-execute` → `finishing-development`。
+- 不得把 `spec-product-prd` / `spec-product-prototype` / `spec-product-demo` 或 `spec-plan` 再列为“后续可选步骤”。
   - 若存在澄清缺口，应当通过 `plan.md/NEEDS CLARIFICATION` 管理：Router 收集到最小输入后，直接回到 I2 执行。
 
 ### Finish（开发收尾确认）的路由口径

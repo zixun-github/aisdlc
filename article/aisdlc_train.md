@@ -152,14 +152,14 @@ markdown-sharing:
 
 适用：范围单一、风险低、验收口径能在 `solution.md` 写清楚。
 
-- `spec-init` → `spec-context` → `spec-product-clarify` → `spec-implementation-plan` → `spec-implementation-execute` → `finishing-development`
+- `spec-init` → `spec-context` → `spec-product-clarify` → `spec-plan` → `spec-execute` → `finishing-development`
 
 #### 4.4 常规闭环（需要规格/交互对齐时）
 
 - `spec-init` → `spec-context` → R1 `spec-product-clarify`
 - 按需执行：R2 `spec-product-prd` → R3 `spec-product-prototype` → R4 `spec-product-demo`
 - 按需进入设计：D1 `spec-design-research`（可选）→ D2 `spec-design`
-- 必做实现：I1 `spec-implementation-plan` → I2 `spec-implementation-execute` → Finish `finishing-development`
+- 必做实现：I1 `spec-plan` → I2 `spec-execute` → Finish `finishing-development`
 
 ---
 
@@ -244,7 +244,7 @@ markdown-sharing:
 #### 7.1 I1：实现计划（plan.md = 唯一 SSOT）
 
 - **适用场景**：任何要进入开发执行的需求（必做）。
-- **技能**：`spec-implementation-plan`（`skills/spec-implementation-plan/SKILL.md`）
+- **技能**：`spec-plan`（`skills/spec-plan/SKILL.md`）
 - **输出**：`{FEATURE_DIR}/implementation/plan.md`
 - **关键要求**：
   - `plan.md` 内必须有可勾选任务（`- [ ]/- [x]`），且每个任务包含：精确文件路径、可执行步骤、最小验证命令与期望信号、提交点与审计信息。
@@ -254,7 +254,7 @@ markdown-sharing:
 #### 7.2 I2：按计划分批执行并回写
 
 - **适用场景**：已有可执行的 `plan.md`，要按批次实现并做检查点汇报。
-- **技能**：`spec-implementation-execute`（`skills/spec-implementation-execute/SKILL.md`）
+- **技能**：`spec-execute`（`skills/spec-execute/SKILL.md`）
 - **输出**：
   - 代码与配置变更
   - **唯一状态回写**：只回写到 `{FEATURE_DIR}/implementation/plan.md`（checkbox + commit/pr/changed_files + 验证结果摘要）
@@ -292,8 +292,8 @@ markdown-sharing:
 | 交互有歧义，需要文本原型对齐 | `spec-context` → `spec-product-prototype` | `prototype.md`（ASCII 线框 + AC 映射 + 走查脚本） |
 | 干系人需要可点可跑走查 | `spec-context` → `spec-product-demo` | Demo（严格按 prototype 页面清单） |
 | 需要 RFC 决策文档/涉及对外承诺变更 | `spec-context` → `spec-design`（按需先 `spec-design-research`） | `design/design.md`（决策与验证清单） |
-| 要进入开发执行，但没有可执行计划 | `spec-context` → `spec-implementation-plan` | `implementation/plan.md`（唯一 SSOT） |
-| 按计划落地实现，并要求审计与检查点 | `spec-context` → `spec-implementation-execute` | 代码变更 + `plan.md` 回写（唯一状态来源） |
+| 要进入开发执行，但没有可执行计划 | `spec-context` → `spec-plan` | `implementation/plan.md`（唯一 SSOT） |
+| 按计划落地实现，并要求审计与检查点 | `spec-context` → `spec-execute` | 代码变更 + `plan.md` 回写（唯一状态来源） |
 | 开发已完成，需要“全绿”证明 | `finishing-development` | 完成确认报告（命令+结果可复现） |
 | 存量项目：入口/边界/契约总在猜 | `project-discover`（按子技能分段） | `.aisdlc/project/*`（memory+index+模块页+ops+DoD） |
 
@@ -317,8 +317,8 @@ markdown-sharing:
 - R0：`spec-init` 生成 `raw.md`
 - 门禁：`spec-context` 回显 `FEATURE_DIR=...`
 - R1：`spec-product-clarify`（要求：澄清记录回写 + 产出 `solution.md`）
-- I1：`spec-implementation-plan`（任务清单可执行、含最小验证命令）
-- I2：`spec-implementation-execute`（分批执行、回写审计到 `plan.md`）
+- I1：`spec-plan`（任务清单可执行、含最小验证命令）
+- I2：`spec-execute`（分批执行、回写审计到 `plan.md`）
 - Finish：`finishing-development`（输出完成确认报告）
 
 #### 10.3 演练 C：复杂交互需求（R2+R3+R4）
@@ -382,8 +382,8 @@ markdown-sharing:
 
 #### 12.5 实现侧（I1–I2）与收尾
 
-- `spec-implementation-plan`：产出 `implementation/plan.md`（唯一执行清单与状态 SSOT）。
-- `spec-implementation-execute`：按 `plan.md` 分批执行并回写审计（状态只写回 `plan.md`）。
+- `spec-plan`：产出 `implementation/plan.md`（唯一执行清单与状态 SSOT）。
+- `spec-execute`：按 `plan.md` 分批执行并回写审计（状态只写回 `plan.md`）。
 - `finishing-development`：收尾确认（只验证，全绿才算完成）。
 
 #### 12.6 并行与协作（可选加餐）
