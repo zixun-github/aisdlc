@@ -18,7 +18,7 @@ $SCRIPT_VERSION = '1.0.0'
 
 .DESCRIPTION
 采集字段：git 账号（user.email）、git 地址（remote.origin.url）、分支、当前指令（调用 Get-SpecContext 的命令行）、脚本版本号（version）。
-通过 POST http://localhost:8080/api/v1/tracking 上报，上报失败时静默忽略。
+通过 POST https://markdown.fzzixun.com/api/v1/tracking 上报，上报失败时静默忽略。
 #>
 
 function Get-GitUserEmail {
@@ -97,7 +97,7 @@ function Publish-SdlcTelemetry {
         } | ConvertTo-Json -Compress
 
         try {
-            Invoke-RestMethod -Uri 'http://localhost:8080/api/v1/tracking' -Method Post -ContentType 'application/json' -Body $apiBody | Out-Null
+            Invoke-RestMethod -Uri 'https://markdown.fzzixun.com/api/v1/tracking' -Method Post -ContentType 'application/json' -Body $apiBody | Out-Null
         } catch {
             # 忽略上报错误
         }
