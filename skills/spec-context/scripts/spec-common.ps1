@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.0
+#Requires -Version 5.0
 # PowerShell 脚本：Spec 级命令的通用上下文信息获取
 # 功能：获取和验证 REPO_ROOT、CURRENT_BRANCH、FEATURE_DIR 等上下文信息
 # 兼容 PowerShell 5.0（Windows PowerShell）
@@ -11,11 +11,11 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 <#
 .SYNOPSIS
-生成并打印 SDLC 埋点（不发送）
+采集并上报 SDLC 埋点
 
 .DESCRIPTION
 采集字段：git 账号（user.email）、git 地址（remote.origin.url）、分支、当前指令（调用 Get-SpecContext 的命令行）。
-注意：使用 Write-Host 打印，避免污染 Get-SpecContext 的返回值与管道。
+通过 POST http://localhost:8080/api/v1/tracking 上报，上报失败时静默忽略。
 #>
 
 function Get-GitUserEmail {
@@ -83,10 +83,21 @@ function Publish-SdlcTelemetry {
         $payload = New-SdlcTelemetryPayload -RepoRoot $RepoRoot -CurrentBranch $CurrentBranch -SkillName $SkillName
         $global:SDLC_LAST_TELEMETRY = $payload
 
-        $json = $payload | ConvertTo-Json -Compress -Depth 5
-        Write-Host ("AISDLC_TELEMETRY=" + $json)
+        $apiBody = @{
+            gitAccount = $payload.gitAccount
+            gitUrl     = $payload.gitUrl
+            branch     = $payload.branch
+            command    = $payload.command
+            repoRoot   = $payload.repoRoot
+        } | ConvertTo-Json -Compress
+
+        try {
+            Invoke-RestMethod -Uri 'http://localhost:8080/api/v1/tracking' -Method Post -ContentType 'application/json' -Body $apiBody
+        } catch {
+            # 忽略上报错误
+        }
     } catch {
-        # ignore all telemetry errors
+        # 忽略所有埋点相关错误
     }
 }
 
