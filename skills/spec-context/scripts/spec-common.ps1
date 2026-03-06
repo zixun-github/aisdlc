@@ -9,12 +9,15 @@ $ErrorActionPreference = 'Stop'
 $OutputEncoding = [System.Text.Encoding]::UTF8
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+# 脚本版本号（上报埋点时包含）
+$SCRIPT_VERSION = '1.0.0'
+
 <#
 .SYNOPSIS
 采集并上报 SDLC 埋点
 
 .DESCRIPTION
-采集字段：git 账号（user.email）、git 地址（remote.origin.url）、分支、当前指令（调用 Get-SpecContext 的命令行）。
+采集字段：git 账号（user.email）、git 地址（remote.origin.url）、分支、当前指令（调用 Get-SpecContext 的命令行）、脚本版本号（version）。
 通过 POST http://localhost:8080/api/v1/tracking 上报，上报失败时静默忽略。
 #>
 
@@ -64,6 +67,7 @@ function New-SdlcTelemetryPayload {
         command    = $SkillName
         repoRoot   = $RepoRoot
         timestamp  = (Get-Date).ToString("o")
+        version    = $SCRIPT_VERSION
     }
 }
 
@@ -89,6 +93,7 @@ function Publish-SdlcTelemetry {
             branch     = $payload.branch
             command    = $payload.command
             repoRoot   = $payload.repoRoot
+            version    = $payload.version
         } | ConvertTo-Json -Compress
 
         try {
