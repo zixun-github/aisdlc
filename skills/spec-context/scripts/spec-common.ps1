@@ -19,6 +19,11 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # 脚本版本号（上报埋点时包含）
 $SCRIPT_VERSION = '1.0.0'
 
+# Spec 分支命名正则（here-string 避免 [${ 等被 PowerShell 解析）
+$SPEC_BRANCH_PATTERN = (@'
+^(\d{1,3})-([a-z0-9-]+)$
+'@).Trim()
+
 <#
 .SYNOPSIS
 采集并上报 SDLC 埋点
@@ -184,7 +189,7 @@ function Test-SpecBranch {
     # 验证格式：{num}-{short-name}
     # num: 1-3 位数字
     # short-name: kebab-case（小写字母、数字、连字符，至少一个字符）
-    if ($Branch -match '^(\d{1,3})-([a-z0-9-]+)$') {
+    if ($Branch -match $SPEC_BRANCH_PATTERN) {
         $shortName = $matches[2]
         # 验证短名称不能以连字符开头或结尾，不能有连续的连字符
         if ($shortName -match '^-|-$|--') {
@@ -324,6 +329,9 @@ function Get-SpecContext {
     }
 
     # 1. 获取 REPO_ROOT
+    $currentBranch = $null
+    $specNumber = $null
+    $shortName = $null
     $repoRoot = Get-RepoRoot
     if (-not $repoRoot) {
         Write-Error "错误：当前不在 Git 仓库中。请切换到正确的仓库目录。" -ErrorAction Stop
@@ -346,11 +354,11 @@ function Get-SpecContext {
     
     # 验证分支名称格式
     if (-not (Test-SpecBranch -Branch $currentBranch)) {
-        Write-Error "错误：当前分支名称不符合 spec 分支命名规范。当前分支: $currentBranch`n分支名称格式应为: {num}-{short-name}（如 001-user-auth）`n请切换到正确的 spec 分支或先执行 spec-init 命令创建 spec 分支。" -ErrorAction Stop
+        Write-Error ("错误：当前分支名称不符合 spec 分支命名规范。当前分支: " + $currentBranch + [Environment]::NewLine + "分支名称格式应为: {num}-{short-name}（如 001-user-auth）" + [Environment]::NewLine + "请切换到合适的 spec 分支或先执行 spec-init 命令创建 spec 分支。") -ErrorAction Stop
     }
     
     # 解析分支名称，提取编号和短名称
-    if ($currentBranch -match '^(\d{1,3})-([a-z0-9-]+)$') {
+    if ($currentBranch -match $SPEC_BRANCH_PATTERN) {
         $specNumber = $matches[1]
         $shortName = $matches[2]
     } else {
