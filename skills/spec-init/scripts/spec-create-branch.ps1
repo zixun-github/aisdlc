@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.0
+#Requires -Version 5.0
 # PowerShell 脚本：创建 spec 工作分支和目录
 # 功能：查找最大编号、创建分支、创建目录结构、初始化文件
 # 兼容 PowerShell 5.0（Windows PowerShell）
@@ -86,7 +86,8 @@ function Find-MaxNumber {
   # 3. 获取 specs 目录中的编号（匹配 {num}-{short-name} 格式，short-name 可以是任何字符）
   try {
     Write-Host "正在检查 specs 目录..."
-    $specsDir = Join-Path $RepoRoot '.aisdlc\specs'
+    $aisdlcDir = Join-Path $RepoRoot '.aisdlc'
+    $specsDir = Join-Path $aisdlcDir 'specs'
     if (Test-Path -LiteralPath $specsDir) {
       $specDirs = Get-ChildItem -LiteralPath $specsDir -Directory -ErrorAction SilentlyContinue | 
         Where-Object { $_.Name -match "^(\d{1,3})-.+$" }
@@ -131,10 +132,14 @@ function Create-SpecBranch {
     throw "分支 '$branchName' 已存在"
   }
   
-  # 创建分支
+  # 创建分支（git 将 "Switched to a new branch" 输出到 stderr，PowerShell 会误判为错误，需临时抑制）
   Write-Host "正在创建分支: $branchName"
+  $prevEAP = $ErrorActionPreference
+  $ErrorActionPreference = 'SilentlyContinue'
   git checkout -b $branchName 2>&1 | Out-Null
-  if (-not $?) {
+  $exitCode = $LASTEXITCODE
+  $ErrorActionPreference = $prevEAP
+  if ($exitCode -ne 0) {
     throw "创建分支失败: git checkout -b $branchName"
   }
   
@@ -152,7 +157,9 @@ function Create-SpecDirectory {
     [string]$RepoRoot
   )
   
-  $specDir = Join-Path $RepoRoot ".aisdlc\specs\$Number-$ShortName"
+  $aisdlcDir = Join-Path $RepoRoot '.aisdlc'
+  $specsDir = Join-Path $aisdlcDir 'specs'
+  $specDir = Join-Path $specsDir "$Number-$ShortName"
   
   # 检查目录是否已存在
   if (Test-Path -LiteralPath $specDir) {
@@ -183,7 +190,8 @@ function Write-RawRequirement {
     [string]$SourceFilePath
   )
   
-  $rawFile = Join-Path $SpecDir "requirements\raw.md"
+  $reqDir = Join-Path $SpecDir 'requirements'
+  $rawFile = Join-Path $reqDir 'raw.md'
   Write-Host "正在写入原始需求到: $rawFile"
   
   # 从文件读取内容（使用 UTF-8 with BOM 编码）
@@ -271,8 +279,11 @@ function Main {
   Write-Host "=========================================="
   Write-Host "完成！"
   Write-Host "=========================================="
-  Write-Host "分支名称: $branchName"
-  Write-Host "Spec 目录: $specDir"
+  Write-Output "REPO_ROOT=$repoRoot"
+  Write-Output "CURRENT_BRANCH=$branchName"
+  Write-Output "FEATURE_DIR=$specDir"
+  Write-Output "SPEC_NUMBER=$formattedNumber"
+  Write-Output "SHORT_NAME=$ShortName"
   Write-Host ""
   
   # 返回结果（JSON 格式，供其他脚本使用）
