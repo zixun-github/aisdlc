@@ -211,6 +211,23 @@ function Get-SubmoduleState {
         [string]$RepoRoot
     )
 
+    $gitmodulesPath = $null
+    $pathOutput = @()
+    $urlOutput = @()
+    $urlMap = @{}
+    $submodules = @()
+    $line = $null
+    $name = $null
+    $path = $null
+    $fullPath = $null
+    $exists = $false
+    $branch = ''
+    $head = ''
+    $status = $null
+    $isDirty = $false
+    $isDetached = $false
+    $remote = ''
+
     $gitmodulesPath = Join-Path $RepoRoot '.gitmodules'
     if (-not (Test-Path -Path $gitmodulesPath -PathType Leaf)) {
         return @()
@@ -224,19 +241,19 @@ function Get-SubmoduleState {
     $urlOutput = git -C $RepoRoot config -f $gitmodulesPath --get-regexp '^submodule\..*\.url$' 2>$null
     $urlMap = @{}
     foreach ($line in $urlOutput) {
-        if ($line -match '^submodule\.(.+)\.url\s+(.+)$') {
-            $urlMap[$matches[1]] = $matches[2]
+        if ([regex]::IsMatch($line, '^submodule\.(.+)\.url\s+(.+)$')) {
+            $urlMap[([regex]::Match($line, '^submodule\.(.+)\.url\s+(.+)$')).Groups[1].Value] = ([regex]::Match($line, '^submodule\.(.+)\.url\s+(.+)$')).Groups[2].Value
         }
     }
 
     $submodules = @()
     foreach ($line in $pathOutput) {
-        if ($line -notmatch '^submodule\.(.+)\.path\s+(.+)$') {
+        if (-not [regex]::IsMatch($line, '^submodule\.(.+)\.path\s+(.+)$')) {
             continue
         }
 
-        $name = $matches[1]
-        $path = $matches[2]
+        $name = ([regex]::Match($line, '^submodule\.(.+)\.path\s+(.+)$')).Groups[1].Value
+        $path = ([regex]::Match($line, '^submodule\.(.+)\.path\s+(.+)$')).Groups[2].Value
         $fullPath = Join-Path $RepoRoot $path
         $exists = Test-Path -Path $fullPath -PathType Container
         $branch = ''
@@ -288,7 +305,7 @@ function Get-SubmoduleState {
         }
     }
 
-    return $submodules
+    return ,@($submodules)
 }
 
 <#
@@ -312,11 +329,13 @@ function Test-SpecBranch {
         [string]$Branch
     )
     
+    $shortName = $null
+
     # 验证格式：{num}-{short-name}
     # num: 1-3 位数字
     # short-name: kebab-case（小写字母、数字、连字符，至少一个字符）
-    if ($Branch -match $SPEC_BRANCH_PATTERN) {
-        $shortName = $matches[2]
+    if ([regex]::IsMatch($Branch, $SPEC_BRANCH_PATTERN)) {
+        $shortName = ([regex]::Match($Branch, $SPEC_BRANCH_PATTERN)).Groups[2].Value
         # 验证短名称不能以连字符开头或结尾，不能有连续的连字符
         if ($shortName -match '^-|-$|--') {
             return $false
@@ -459,6 +478,11 @@ function Get-SpecContext {
     $currentBranch = $null
     $specNumber = $null
     $shortName = $null
+    $repoRoot = $null
+    $branchForTelemetry = $null
+    $specsDir = $null
+    $featureDir = $null
+    $submodules = @()
     $repoRoot = Resolve-SpecRepoRoot -StartPath (Get-Location)
     if (-not $repoRoot) {
         $repoRoot = Get-RepoRoot
@@ -488,9 +512,9 @@ function Get-SpecContext {
     }
     
     # 解析分支名称，提取编号和短名称
-    if ($currentBranch -match $SPEC_BRANCH_PATTERN) {
-        $specNumber = $matches[1]
-        $shortName = $matches[2]
+    if ([regex]::IsMatch($currentBranch, $SPEC_BRANCH_PATTERN)) {
+        $specNumber = ([regex]::Match($currentBranch, $SPEC_BRANCH_PATTERN)).Groups[1].Value
+        $shortName = ([regex]::Match($currentBranch, $SPEC_BRANCH_PATTERN)).Groups[2].Value
     } else {
         # 理论上不会到达这里，因为已经验证过格式
         Write-Error "错误：无法解析分支名称: $currentBranch" -ErrorAction Stop
@@ -515,7 +539,7 @@ function Get-SpecContext {
         FEATURE_DIR       = $featureDir
         SPEC_NUMBER       = $specNumber
         SHORT_NAME        = $shortName
-        SUBMODULE_SET_JSON = $(if ($submodules.Count -eq 0) { '[]' } else { $submodules | ConvertTo-Json -Compress -Depth 4 })
+        SUBMODULE_SET_JSON = $(if ((@($submodules)).Count -eq 0) { '[]' } else { ConvertTo-Json -InputObject @($submodules) -Compress -Depth 4 })
     }
 }
 
