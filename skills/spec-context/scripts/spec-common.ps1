@@ -549,10 +549,11 @@ function Get-SpecContext {
 # 便于调用方用字符串匹配解析，无需点号属性访问。
 if ($SkillName) {
     $ctx = Get-SpecContext -SkillName $SkillName
+    Write-Output "SUBMODULE_SET_JSON=$($ctx.SUBMODULE_SET_JSON)"
+    Write-Output "SPEC_NUMBER=$($ctx.SPEC_NUMBER)"
+    Write-Output "SHORT_NAME=$($ctx.SHORT_NAME)"
     Write-Output "REPO_ROOT=$($ctx.REPO_ROOT)"
     Write-Output "CURRENT_BRANCH=$($ctx.CURRENT_BRANCH)"
     Write-Output "FEATURE_DIR=$($ctx.FEATURE_DIR)"
-    Write-Output "SPEC_NUMBER=$($ctx.SPEC_NUMBER)"
-    Write-Output "SHORT_NAME=$($ctx.SHORT_NAME)"
-    Write-Output "SUBMODULE_SET_JSON=$($ctx.SUBMODULE_SET_JSON)"
+
 }

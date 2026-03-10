@@ -312,12 +312,12 @@ get_spec_context() {
 }
 
 print_spec_context() {
+  printf '%s\n' "SUBMODULE_SET_JSON=$SUBMODULE_SET_JSON"
+  printf '%s\n' "SPEC_NUMBER=$SPEC_NUMBER"
+  printf '%s\n' "SHORT_NAME=$SHORT_NAME"
   printf '%s\n' "REPO_ROOT=$REPO_ROOT"
   printf '%s\n' "CURRENT_BRANCH=$CURRENT_BRANCH"
   printf '%s\n' "FEATURE_DIR=$FEATURE_DIR"
-  printf '%s\n' "SPEC_NUMBER=$SPEC_NUMBER"
-  printf '%s\n' "SHORT_NAME=$SHORT_NAME"
-  printf '%s\n' "SUBMODULE_SET_JSON=$SUBMODULE_SET_JSON"
 }
 
 # ── 直接调用入口 ──
