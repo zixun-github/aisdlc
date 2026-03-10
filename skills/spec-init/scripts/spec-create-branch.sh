@@ -47,22 +47,46 @@ is_valid_short_name() {
 resolve_repo_root() {
   local script_dir="$1"
   local repo_root=""
-  if repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+
+  find_spec_repo_root() {
+    local start_path="$1"
+    local cur
+    cur="$(cd "$start_path" 2>/dev/null && pwd)" || return 1
+    while [[ -n "$cur" && "$cur" != "/" ]]; do
+      if [[ -e "$cur/.git" && -d "$cur/.aisdlc" ]]; then
+        echo "$cur"
+        return 0
+      fi
+      cur="$(cd "$cur/.." && pwd)"
+    done
+    return 1
+  }
+
+  if repo_root="$(find_spec_repo_root "$(pwd)" 2>/dev/null)"; then
     log_cyan "仓库根目录: $repo_root"
     echo "$repo_root"
     return 0
   fi
 
-  log_yellow "警告: 无法使用 git 获取仓库根目录，使用路径解析"
-  local cur="$script_dir"
-  while [[ -n "$cur" && "$cur" != "/" ]]; do
-    if [[ -d "$cur/.git" ]]; then
-      log_cyan "仓库根目录: $cur"
-      echo "$cur"
+  local current_repo_root=""
+  local spec_repo_root=""
+  if current_repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+    if spec_repo_root="$(find_spec_repo_root "$current_repo_root" 2>/dev/null)"; then
+      log_cyan "仓库根目录: $spec_repo_root"
+      echo "$spec_repo_root"
       return 0
     fi
-    cur="$(cd "$cur/.." && pwd)"
-  done
+    log_cyan "仓库根目录: $current_repo_root"
+    echo "$current_repo_root"
+    return 0
+  fi
+
+  log_yellow "警告: 无法使用 git 获取仓库根目录，使用路径解析"
+  if repo_root="$(find_spec_repo_root "$script_dir" 2>/dev/null)"; then
+    log_cyan "仓库根目录: $repo_root"
+    echo "$repo_root"
+    return 0
+  fi
 
   # 最后备用方案：从脚本路径向上两级（兼容旧逻辑）
   local fallback
@@ -77,7 +101,7 @@ find_max_number() {
 
   # 1) 远程分支
   log "正在获取远程分支..."
-  git fetch --all --prune 2>/dev/null || log "  警告: 无法获取远程分支"
+  git -C "$repo_root" fetch --all --prune 2>/dev/null || log "  警告: 无法获取远程分支"
   while IFS= read -r line; do
     # e.g. "  origin/012-foo" or "  origin/012-foo -> origin/HEAD"
     local match_line="${line#*origin/}"
@@ -89,7 +113,7 @@ find_max_number() {
       if (( val > max )); then max="$val"; fi
       log "  找到远程分支编号: $n (分支: origin/$match_line)"
     fi
-  done < <(git branch -r 2>/dev/null || true)
+  done < <(git -C "$repo_root" branch -r 2>/dev/null || true)
 
   # 2) 本地分支
   log "正在获取本地分支..."
@@ -102,7 +126,7 @@ find_max_number() {
       if (( val > max )); then max="$val"; fi
       log "  找到本地分支编号: $n (分支: $line)"
     fi
-  done < <(git branch 2>/dev/null || true)
+  done < <(git -C "$repo_root" branch 2>/dev/null || true)
 
   # 3) specs 目录
   log "正在检查 specs 目录..."
@@ -131,9 +155,10 @@ find_max_number() {
 }
 
 ensure_branch_not_exists() {
-  local branch="$1"
-  if git show-ref --verify --quiet "refs/heads/$branch" || \
-     git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+  local repo_root="$1"
+  local branch="$2"
+  if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch" || \
+     git -C "$repo_root" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
     die "分支 '$branch' 已存在"
   fi
 }
@@ -218,6 +243,7 @@ log "短名称: $short_name"
 log "仓库根目录: $repo_root"
 log_cyan "当前工作目录: $(pwd)"
 log_cyan "脚本根目录: $script_dir"
+log_yellow "说明: spec-init 只初始化根项目 Spec Pack；若后续需求涉及子仓，子仓分支应在 I1 -> I2 之间按计划创建并校验。"
 log ""
 
 log "步骤 1: 查找最大编号"
@@ -231,9 +257,9 @@ log ""
 log "步骤 2: 创建分支"
 log "------------------------------------------"
 branch_name="${formatted_number}-${short_name}"
-ensure_branch_not_exists "$branch_name"
+ensure_branch_not_exists "$repo_root" "$branch_name"
 log "正在创建分支: $branch_name"
-git checkout -b "$branch_name" 2>/dev/null || die "创建分支失败: git checkout -b $branch_name"
+git -C "$repo_root" checkout -b "$branch_name" 2>/dev/null || die "创建分支失败: git checkout -b $branch_name"
 log "分支创建成功: $branch_name"
 log ""
 

@@ -19,10 +19,8 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # 脚本版本号（上报埋点时包含）
 $SCRIPT_VERSION = '1.0.0'
 
-# Spec 分支命名正则（here-string 避免 [${ 等被 PowerShell 解析）
-$SPEC_BRANCH_PATTERN = (@'
-^(\d{1,3})-([a-z0-9-]+)$
-'@).Trim()
+# Spec 分支命名正则
+$SPEC_BRANCH_PATTERN = '^(\d{1,3})-([a-z0-9-]+)$'
 
 <#
 .SYNOPSIS
@@ -142,6 +140,40 @@ function Get-RepoRoot {
     return $null
 }
 
+function Test-GitDirectoryMarker {
+    param(
+        [Parameter(Mandatory)]
+        [string]$RepoRoot
+    )
+
+    $gitPath = Join-Path $RepoRoot '.git'
+    return (Test-Path -Path $gitPath)
+}
+
+function Resolve-SpecRepoRoot {
+    param(
+        [Parameter(Mandatory)]
+        [string]$StartPath
+    )
+
+    $currentPath = Resolve-Path $StartPath
+    while ($currentPath) {
+        $candidate = $currentPath.Path
+        $aisdlcDir = Join-Path $candidate '.aisdlc'
+        if ((Test-Path -Path $aisdlcDir -PathType Container) -and (Test-GitDirectoryMarker -RepoRoot $candidate)) {
+            return $candidate
+        }
+
+        $parent = Split-Path $candidate -Parent
+        if (-not $parent -or $parent -eq $candidate) {
+            break
+        }
+        $currentPath = Resolve-Path $parent
+    }
+
+    return $null
+}
+
 <#
 .SYNOPSIS
 获取当前 Git 分支名称
@@ -153,8 +185,16 @@ function Get-RepoRoot {
 [string] 当前分支名称，如果获取失败则返回 $null
 #>
 function Get-CurrentBranch {
+    param(
+        [string]$RepoRoot
+    )
+
     try {
-        $result = git branch --show-current 2>$null
+        if ($RepoRoot) {
+            $result = git -C $RepoRoot branch --show-current 2>$null
+        } else {
+            $result = git branch --show-current 2>$null
+        }
         if ($? -and $result) {
             return $result.Trim()
         }
@@ -163,6 +203,92 @@ function Get-CurrentBranch {
     }
     
     return $null
+}
+
+function Get-SubmoduleState {
+    param(
+        [Parameter(Mandatory)]
+        [string]$RepoRoot
+    )
+
+    $gitmodulesPath = Join-Path $RepoRoot '.gitmodules'
+    if (-not (Test-Path -Path $gitmodulesPath -PathType Leaf)) {
+        return @()
+    }
+
+    $pathOutput = git -C $RepoRoot config -f $gitmodulesPath --get-regexp '^submodule\..*\.path$' 2>$null
+    if (-not $?) {
+        return @()
+    }
+
+    $urlOutput = git -C $RepoRoot config -f $gitmodulesPath --get-regexp '^submodule\..*\.url$' 2>$null
+    $urlMap = @{}
+    foreach ($line in $urlOutput) {
+        if ($line -match '^submodule\.(.+)\.url\s+(.+)$') {
+            $urlMap[$matches[1]] = $matches[2]
+        }
+    }
+
+    $submodules = @()
+    foreach ($line in $pathOutput) {
+        if ($line -notmatch '^submodule\.(.+)\.path\s+(.+)$') {
+            continue
+        }
+
+        $name = $matches[1]
+        $path = $matches[2]
+        $fullPath = Join-Path $RepoRoot $path
+        $exists = Test-Path -Path $fullPath -PathType Container
+        $branch = ''
+        $head = ''
+        $isDirty = $false
+        $isDetached = $false
+
+        if ($exists -and (Test-GitDirectoryMarker -RepoRoot $fullPath)) {
+            try {
+                $branch = git -C $fullPath branch --show-current 2>$null
+                if ($branch) {
+                    $branch = $branch.Trim()
+                }
+            } catch {
+                $branch = ''
+            }
+
+            try {
+                $head = git -C $fullPath rev-parse HEAD 2>$null
+                if ($head) {
+                    $head = $head.Trim()
+                }
+            } catch {
+                $head = ''
+            }
+
+            try {
+                $status = git -C $fullPath status --porcelain 2>$null
+                $isDirty = [bool]$status
+            } catch {
+                $isDirty = $false
+            }
+
+            $isDetached = [string]::IsNullOrWhiteSpace($branch)
+        }
+
+        $remote = if ($urlMap.ContainsKey($name)) { $urlMap[$name] } else { '' }
+
+        $submodules += [PSCustomObject]@{
+            name        = $name
+            path        = $path
+            root        = $fullPath
+            remote      = $remote
+            branch      = $branch
+            head        = $head
+            is_dirty    = $isDirty
+            is_detached = $isDetached
+            exists      = $exists
+        }
+    }
+
+    return $submodules
 }
 
 <#
@@ -230,9 +356,8 @@ function Test-SpecRepoRoot {
         return $false
     }
     
-    # 检查是否存在 .git 目录
-    $gitDir = Join-Path $RepoRoot '.git'
-    if (-not (Test-Path -Path $gitDir -PathType Container)) {
+    # 检查是否存在 .git 目录或文件（兼容 worktree/submodule）
+    if (-not (Test-GitDirectoryMarker -RepoRoot $RepoRoot)) {
         return $false
     }
     
@@ -302,6 +427,7 @@ function Test-SpecFeatureDir {
 - REPO_ROOT: Git 仓库根目录
 - CURRENT_BRANCH: 当前分支名称
 - FEATURE_DIR: Spec 目录路径
+- SUBMODULE_SET_JSON: submodule 状态快照（若存在 `.gitmodules`）
 
 该函数会执行完整的验证流程，如果任何验证失败，会抛出错误。
 
@@ -312,6 +438,7 @@ function Test-SpecFeatureDir {
 - FEATURE_DIR: Spec 目录路径
 - SPEC_NUMBER: 分支编号部分（从分支名称提取）
 - SHORT_NAME: 分支短名称部分（从分支名称提取）
+- SUBMODULE_SET_JSON: submodule 状态快照 JSON（若存在 `.gitmodules`）
 
 .EXAMPLE
 $context = Get-SpecContext
@@ -332,13 +459,16 @@ function Get-SpecContext {
     $currentBranch = $null
     $specNumber = $null
     $shortName = $null
-    $repoRoot = Get-RepoRoot
+    $repoRoot = Resolve-SpecRepoRoot -StartPath (Get-Location)
+    if (-not $repoRoot) {
+        $repoRoot = Get-RepoRoot
+    }
     if (-not $repoRoot) {
         Write-Error "错误：当前不在 Git 仓库中。请切换到正确的仓库目录。" -ErrorAction Stop
     }
 
     # 埋点采集：尽量早打印（即使后续校验失败）
-    $currentBranch = Get-CurrentBranch
+    $currentBranch = Get-CurrentBranch -RepoRoot $repoRoot
     $branchForTelemetry = if ($currentBranch) { $currentBranch } else { '' }
     Publish-SdlcTelemetry -RepoRoot $repoRoot -CurrentBranch $branchForTelemetry -SkillName $SkillName
     
@@ -377,12 +507,15 @@ function Get-SpecContext {
     }
     
     # 返回上下文信息对象
+    $submodules = Get-SubmoduleState -RepoRoot $repoRoot
+
     return [PSCustomObject]@{
-        REPO_ROOT      = $repoRoot
-        CURRENT_BRANCH = $currentBranch
-        FEATURE_DIR    = $featureDir
-        SPEC_NUMBER    = $specNumber
-        SHORT_NAME     = $shortName
+        REPO_ROOT         = $repoRoot
+        CURRENT_BRANCH    = $currentBranch
+        FEATURE_DIR       = $featureDir
+        SPEC_NUMBER       = $specNumber
+        SHORT_NAME        = $shortName
+        SUBMODULE_SET_JSON = $(if ($submodules.Count -eq 0) { '[]' } else { $submodules | ConvertTo-Json -Compress -Depth 4 })
     }
 }
 
@@ -397,4 +530,5 @@ if ($SkillName) {
     Write-Output "FEATURE_DIR=$($ctx.FEATURE_DIR)"
     Write-Output "SPEC_NUMBER=$($ctx.SPEC_NUMBER)"
     Write-Output "SHORT_NAME=$($ctx.SHORT_NAME)"
+    Write-Output "SUBMODULE_SET_JSON=$($ctx.SUBMODULE_SET_JSON)"
 }

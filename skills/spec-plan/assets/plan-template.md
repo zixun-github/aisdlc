@@ -19,6 +19,7 @@ status: draft
 **范围：** In / Out  
 **架构：** [2–3 句方法说明 + 关键约束]  
 **验收口径：** [引用 requirements/solution.md 或 requirements/prd.md 的 AC/验收点]  
+**子仓范围：** [若仓库存在 `.gitmodules`，列出本次需求涉及的 submodule；无则写“无”]  
 
 ---
 
@@ -37,6 +38,14 @@ status: draft
 - **Out**：
 - **不变量/关键约束**：
 - **影响面**（模块/接口/权限/数据口径/运维）：
+
+## 代码工作区清单（如适用）
+
+> 仅在仓库存在 `.gitmodules` 且本次需求会修改子仓代码时填写。静态子仓路径来自 `.gitmodules`，是否受影响与是否 `required` 由本计划声明。
+
+| 子仓路径 | 是否受影响 | 是否 required | 期望分支 | 例外原因 |
+|---|---|---|---|---|
+| `path/to/submodule` | 是/否 | true/false | `{CURRENT_BRANCH}` | 无 / `<exception_reason>` |
 
 ---
 
@@ -88,12 +97,16 @@ status: draft
 
 ## 任务清单（SSOT）
 
-> 这是唯一的执行清单与状态来源：用 `- [ ] / - [x]` 标记完成；执行中把 `commit/pr/changed_files` 与关键验证结果回写到对应任务。
+> 这是唯一的执行清单与状态来源：用 `- [ ] / - [x]` 标记完成；执行中把按 repo 记录的 `branch/commit/pr/changed_files` 与关键验证结果回写到对应任务。
 > 命令默认面向 PowerShell；同一行多命令请用 `;` 分隔（不要用 `&&`）。
 
 ### Task T1: [任务标题]
 
 - [ ] **状态**：未开始 / 进行中 / 完成 / 阻塞（阻塞必须写明取证路径）
+
+**代码仓范围：**
+- 根项目：
+- 子仓：（如适用；填写 `.gitmodules` 中的路径，并注明 `required=true/false`）
 
 **文件：**
 - 创建：
@@ -116,7 +129,19 @@ status: draft
 
 **步骤 4：提交（频繁提交；commit message 必须中文）**
 - Commit message:
-- 审计信息：`commit=<TBD>`、`pr=<TBD>`、`changed_files=<TBD>`
+- 审计信息：
+  - repo: `root`
+    branch: `{CURRENT_BRANCH}`
+    commit: `<TBD>`
+    pr: `<TBD>`
+    changed_files:
+      - `path/to/file`
+  - repo: `path/to/submodule`（如适用）
+    branch: `{CURRENT_BRANCH}`
+    commit: `<TBD>`
+    pr: `<TBD>`
+    changed_files:
+      - `path/to/file`
 
 ---
 

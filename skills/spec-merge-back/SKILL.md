@@ -51,8 +51,9 @@ Merge-back 是 Spec Pack 生命周期的“晋升阶段”：把本次需求中*
 - NFR（如适用）
 - Registry（`.aisdlc/project/index.md`）
 - 可选晋升（通用测试策略/质量门禁口径等）
+- 若仓库存在 `.gitmodules`：结合 `plan.md` 中声明的受影响子仓，确认哪些证据来自根项目、哪些来自子仓路径
 
-> 禁止：跳过 `plan.md` 待办改用“凭记忆总结”。若时间紧，可用 `git diff` 补证据，但清单来源仍以 `plan.md` 为主。
+> 禁止：跳过 `plan.md` 待办改用“凭记忆总结”。若时间紧，可用 `git diff` 补证据，但清单来源仍以 `plan.md` 为主；`.gitmodules` 只提供静态子仓路径事实，不替代 `plan.md` 的需求级声明。
 
 ### Step 2: 生成/更新 `{FEATURE_DIR}/merge_back.md`（清单与证据）
 
@@ -62,6 +63,7 @@ Merge-back 是 Spec Pack 生命周期的“晋升阶段”：把本次需求中*
 - **不变量摘要**（需要长期护栏时：3–7 条）
 - **证据入口**（OpenAPI/Schema/DDL/脚本/CI/测试/监控入口）
 - **状态**：Done / Not Done（Not Done 必须写缺口与计划）
+- **代码来源**（根项目 / 子仓路径；若来自子仓，引用 `.gitmodules` 中的路径）
 
 > 若用户要求“先别改 project、后面有人手动做”：仍然必须完成 Step 1–2，并把 Step 3 的 project 晋升项标记为 **Not Done + 计划**（否则 merge-back 不可审计、容易永久遗漏）。
 
@@ -91,6 +93,7 @@ Merge-back 是 Spec Pack 生命周期的“晋升阶段”：把本次需求中*
 - `.aisdlc/project` 不存在但你准备“先随便建一下” → **禁止**（CONTEXT GAP，先建 project SSOT 骨架）。
 - 你开始写“git merge/rebase 清单” → 你把 merge-back 误解成 git 合并了，立刻停止纠正。
 - 你准备跳过 `implementation/plan.md` 的 Merge-back 待办 → 高概率遗漏或漂移。
+- 仓库有 `.gitmodules`，但你完全忽略 `plan.md` 中记录的受影响子仓与 repo 维度审计信息 → 高概率丢失证据链
 
 ## Rationalizations (and counters)
 

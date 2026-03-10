@@ -9,6 +9,8 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 
 `spec-init` 用于在本仓库里创建一个新的需求级 Spec Pack：自动递增三位编号、创建并切换到 `{num}-{short-name}` 分支、生成 `.aisdlc/specs/{num}-{short-name}/` 目录结构，并把原始需求写入 `requirements/raw.md`（UTF-8 with BOM）。
 
+约束：即使仓库包含 `.gitmodules`，`spec-init` 也只初始化**根项目**的 Spec 分支与 Spec Pack；子仓分支不在本阶段批量创建。
+
 ## 何时使用 / 不使用
 
 - **使用时机**
@@ -28,6 +30,7 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 - **脚本入口（PowerShell）**：`spec-create-branch.ps1` 的 `Main`（需 PowerShell 5.0+）
 - **脚本入口（Bash）**：`spec-create-branch.sh`（命令行参数见 `--help`；stdout 输出 JSON）
 - **关键副作用**：脚本执行成功后会删除传入的源文件（无论是原始文件还是临时文件）。
+- **与子仓的边界**：若后续实现涉及 submodule，原则上由实现计划在 `I1 -> I2` 之间创建并校验与根项目同名的 Spec 分支
 
 ## 实施步骤（Agent 行为规范）
 
@@ -73,6 +76,11 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
   - `--title <可选>`
   - 调用形态：`spec-create-branch.sh --short-name <...> --source-file <...> [--title <...>]`
 
+脚本职责边界：
+
+- 若当前目录位于 submodule 内，脚本应先回溯到根项目，再在根项目创建 Spec 分支与 `.aisdlc/specs/...`
+- 不在此阶段创建 submodule 分支，也不生成额外的 repo 清单文件
+
 ### 4) 验收（DoD）
 
 检查以下事实是否同时成立（缺一不可）：
@@ -81,6 +89,7 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 - `.aisdlc/specs/<branchName>/` 存在，且包含 5 个必需子目录（`requirements/`、`design/`、`implementation/`、`verification/`、`release/`）。
 - `.aisdlc/specs/<branchName>/requirements/raw.md` 存在，内容等于原始需求（注意文件头有 UTF-8 BOM）。
 - 传入的源文件已被删除（这不是 bug；若用户需要保留，应在步骤 1 之前自行备份）。
+- 若仓库包含 `.gitmodules`：本阶段不要求任何子仓已创建分支；后续应由 I1/I2 门禁处理
 
 ### 5) 完成后：立即交回 `using-aisdlc` 继续自动推进
 
@@ -132,3 +141,4 @@ ROUTER_SUMMARY:
 - **把中文需求当作命令行参数直接传递**：一律写入文件，再传路径。
 - **误以为脚本不会删源文件**：它会删除 `SourceFilePath` 指向的文件；对用户的原始文件务必先确认是否需要备份。
 - **短名称不规范**：避免大写、下划线、中文；避免前后连字符与连续 `--`；尽量 2-4 词。
+- **把 submodule 当作 Spec 根目录**：即使从子仓目录触发，也必须回到根项目创建 `.aisdlc/specs/...`

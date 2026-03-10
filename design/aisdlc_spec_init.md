@@ -22,6 +22,8 @@ principles_ref: design/aisdlc.md
 
 所有输出统一到：`.aisdlc/specs/{num}-{short-name}/`（需求级 Spec Pack 根目录）
 
+> 约束：Spec Pack 与需求/设计/实现文档始终位于根项目；即使仓库包含 `git submodule`，submodule 也只作为后续实现阶段的代码工作区，不承载 Spec 文档。
+
 ---
 
 ## 1. 为什么采用分支形式？
@@ -51,6 +53,7 @@ principles_ref: design/aisdlc.md
 - 每个需求在独立分支中工作，避免不同需求的文档和代码相互干扰
 - 符合 Git Flow 最佳实践，便于代码审查和合并管理
 - 支持并行开发多个需求，互不冲突
+- 若后续实现涉及 submodule，子仓原则上应使用与根项目一致的同名 Spec 分支，但这些子仓分支不在 `spec-init` 阶段批量创建
 
 **3. 版本控制与追溯**
 
@@ -300,6 +303,12 @@ principles_ref: design/aisdlc.md
   - 确保文件操作在正确的需求目录下进行
 - **获取方式**：基于 `CURRENT_BRANCH` 自动构建路径：`{REPO_ROOT}/.aisdlc/specs/{CURRENT_BRANCH}/`
 
+**补充说明：submodule 不改变 FEATURE_DIR 的解析规则**
+
+- `.gitmodules` 仅用于后续实现阶段识别“有哪些子仓可参与代码修改”
+- 即使命令从 submodule 目录触发，也应回溯到根项目并解析同一个 `FEATURE_DIR`
+- 不允许根据 submodule 分支单独映射新的 Spec 目录
+
 #### 4.4.3 上下文信息获取流程
 
 **标准执行流程**：
@@ -354,6 +363,7 @@ principles_ref: design/aisdlc.md
 - 创建一个通用的上下文信息获取函数（如 `Get-SpecContext`）
 - 该函数可以被所有 spec 级命令调用
 - 返回标准化的上下文信息对象（包含 `REPO_ROOT`、`CURRENT_BRANCH`、`FEATURE_DIR` 等字段）
+- 若仓库存在 `.gitmodules`，可额外返回 submodule 状态快照，供实现阶段校验分支一致性与工作区状态
 
 **调用约定**：
 
@@ -397,6 +407,12 @@ principles_ref: design/aisdlc.md
 
 如果 Git 操作失败（如分支已存在），提示错误并停止执行。
 
+### 6.2.1 Submodule 分支创建时机
+
+- `spec-init` 只负责根项目 Spec 分支与 Spec Pack 目录的初始化
+- 若后续需求会修改 submodule，应由实现计划在 `I1 -> I2` 之间根据 `impact-analysis` 明确受影响子仓
+- 进入 I2 前，再为 `required` 子仓创建并校验与根项目一致的同名 Spec 分支
+
 ### 6.3 目录已存在
 
 如果目录已存在，提示用户确认覆盖或使用不同编号。
@@ -428,6 +444,7 @@ principles_ref: design/aisdlc.md
 - **短名称生成**：使用 AI 分析需求内容，生成符合规范的短名称
 - **编码统一**：所有文件操作使用 UTF-8 with BOM 编码，确保中文内容正确处理
 - **分支与目录一致性**：分支名称与目录路径必须保持一致，确保上下文自动识别机制正常工作
+- **子仓不承载 Spec 文档**：`.gitmodules` 与 submodule 只在实现阶段参与，不能替代根项目 `.aisdlc/specs/...`
 
 ---
 
@@ -456,3 +473,9 @@ principles_ref: design/aisdlc.md
 - 当 Agent 检测到当前在某个 spec 分支时，自动加载该需求的 Spec Pack
 - 无需在每次对话中重复指定需求上下文
 - 符合 AI SDLC 规范中的"渐进式披露"原则
+
+### 9.5 与 Submodule 的职责边界
+
+- 根项目分支是 Spec 身份与 `FEATURE_DIR` 的唯一锚点
+- `.gitmodules` 只提供 submodule 的静态事实（路径/远程）
+- 子仓原则上使用与根项目一致的同名 Spec 分支，但创建与校验发生在实现阶段，不在 `spec-init` 阶段批量处理

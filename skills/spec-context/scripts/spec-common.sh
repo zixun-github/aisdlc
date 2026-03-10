@@ -21,6 +21,16 @@ spec_context__die() {
   return 1
 }
 
+json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/\\r}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
 get_repo_root() {
   local out
   out="$(git rev-parse --show-toplevel 2>/dev/null)" || return 1
@@ -29,9 +39,39 @@ get_repo_root() {
   printf '%s\n' "$out"
 }
 
+test_git_directory_marker() {
+  local repo_root="$1"
+  [[ -e "$repo_root/.git" ]]
+}
+
+resolve_spec_repo_root() {
+  local start_path="$1"
+  local current_path
+  current_path="$(cd "$start_path" 2>/dev/null && pwd -P)" || return 1
+
+  while [[ -n "$current_path" ]]; do
+    if [[ -d "$current_path/.aisdlc" ]] && test_git_directory_marker "$current_path"; then
+      printf '%s\n' "$current_path"
+      return 0
+    fi
+
+    if [[ "$current_path" == "/" ]]; then
+      break
+    fi
+    current_path="$(dirname "$current_path")"
+  done
+
+  return 1
+}
+
 get_current_branch() {
+  local repo_root="${1:-}"
   local out
-  out="$(git branch --show-current 2>/dev/null)" || return 1
+  if [[ -n "$repo_root" ]]; then
+    out="$(git -C "$repo_root" branch --show-current 2>/dev/null)" || return 1
+  else
+    out="$(git branch --show-current 2>/dev/null)" || return 1
+  fi
   out="${out//$'\r'/}"
   [[ -n "$out" ]] || return 1
   printf '%s\n' "$out"
@@ -111,7 +151,7 @@ test_spec_repo_root() {
 
   [[ -n "$repo_root" ]] || return 1
   [[ -d "$repo_root" ]] || return 1
-  [[ -d "$repo_root/.git" ]] || return 1
+  test_git_directory_marker "$repo_root" || return 1
   [[ -d "$repo_root/.aisdlc" ]] || return 1
 
   return 0
@@ -132,6 +172,67 @@ test_spec_feature_dir() {
   return 0
 }
 
+# 返回 submodule 状态快照 JSON
+get_submodule_set_json() {
+  local repo_root="$1"
+  local gitmodules_path="$repo_root/.gitmodules"
+  local first=1
+
+  [[ -f "$gitmodules_path" ]] || {
+    printf '[]'
+    return 0
+  }
+
+  printf '['
+  while IFS= read -r line; do
+    [[ -n "$line" ]] || continue
+    if [[ ! "$line" =~ ^submodule\.(.+)\.path[[:space:]]+(.+)$ ]]; then
+      continue
+    fi
+
+    local name="${BASH_REMATCH[1]}"
+    local path="${BASH_REMATCH[2]}"
+    local full_path="$repo_root/$path"
+    local remote branch head exists is_dirty is_detached
+    remote="$(git -C "$repo_root" config -f "$gitmodules_path" --get "submodule.$name.url" 2>/dev/null || true)"
+    branch=""
+    head=""
+    exists=false
+    is_dirty=false
+    is_detached=false
+
+    if [[ -d "$full_path" ]] && test_git_directory_marker "$full_path"; then
+      exists=true
+      branch="$(git -C "$full_path" branch --show-current 2>/dev/null || true)"
+      head="$(git -C "$full_path" rev-parse HEAD 2>/dev/null || true)"
+      if [[ -n "$(git -C "$full_path" status --porcelain 2>/dev/null || true)" ]]; then
+        is_dirty=true
+      fi
+      if [[ -z "$branch" ]]; then
+        is_detached=true
+      fi
+    fi
+
+    if [[ $first -eq 0 ]]; then
+      printf ','
+    fi
+    first=0
+
+    printf '{'
+    printf '"name":"%s",' "$(json_escape "$name")"
+    printf '"path":"%s",' "$(json_escape "$path")"
+    printf '"root":"%s",' "$(json_escape "$full_path")"
+    printf '"remote":"%s",' "$(json_escape "$remote")"
+    printf '"branch":"%s",' "$(json_escape "$branch")"
+    printf '"head":"%s",' "$(json_escape "$head")"
+    printf '"exists":%s,' "$exists"
+    printf '"is_dirty":%s,' "$is_dirty"
+    printf '"is_detached":%s' "$is_detached"
+    printf '}'
+  done < <(git -C "$repo_root" config -f "$gitmodules_path" --get-regexp '^submodule\..*\.path$' 2>/dev/null || true)
+  printf ']'
+}
+
 # 获取 Spec 上下文信息
 #
 # 参数：
@@ -143,20 +244,25 @@ test_spec_feature_dir() {
 # - FEATURE_DIR
 # - SPEC_NUMBER
 # - SHORT_NAME
+# - SUBMODULE_SET_JSON
 #
 # 返回值：0 成功；非 0 失败（并输出错误信息到 stderr）
 get_spec_context() {
   local skill_name="${1:-unknown}"
   local repo_root current_branch spec_number short_name feature_dir
+  local submodule_set_json
 
   # 1. 获取 REPO_ROOT
-  repo_root="$(get_repo_root)" || {
-    spec_context__die "错误：当前不在 Git 仓库中。请切换到正确的仓库目录。"
-    return 1
-  }
+  repo_root="$(resolve_spec_repo_root "$(pwd -P)" 2>/dev/null)" || repo_root=""
+  if [[ -z "$repo_root" ]]; then
+    repo_root="$(get_repo_root)" || {
+      spec_context__die "错误：当前不在 Git 仓库中。请切换到正确的仓库目录。"
+      return 1
+    }
+  fi
 
   # 埋点采集：尽早上报（即使后续校验失败）
-  current_branch="$(get_current_branch 2>/dev/null)" || current_branch=""
+  current_branch="$(get_current_branch "$repo_root" 2>/dev/null)" || current_branch=""
   publish_sdlc_telemetry "$repo_root" "$current_branch" "$skill_name"
 
   # 验证 REPO_ROOT
@@ -200,6 +306,7 @@ get_spec_context() {
   FEATURE_DIR="$feature_dir"
   SPEC_NUMBER="$spec_number"
   SHORT_NAME="$short_name"
+  SUBMODULE_SET_JSON="$(get_submodule_set_json "$repo_root")"
 
   return 0
 }
@@ -210,6 +317,7 @@ print_spec_context() {
   printf '%s\n' "FEATURE_DIR=$FEATURE_DIR"
   printf '%s\n' "SPEC_NUMBER=$SPEC_NUMBER"
   printf '%s\n' "SHORT_NAME=$SHORT_NAME"
+  printf '%s\n' "SUBMODULE_SET_JSON=$SUBMODULE_SET_JSON"
 }
 
 # ── 直接调用入口 ──
