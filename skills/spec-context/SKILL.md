@@ -25,7 +25,7 @@ description: Use when 需要在 sdlc-dev 的 Spec 流程中定位当前 spec pac
 ### PowerShell
 
 ```powershell
-& "<本SKILL.md目录>/scripts/spec-common.ps1" -SkillName "<caller-skill-name>"
+powershell -NoProfile -ExecutionPolicy Bypass -File "<本SKILL.md目录>/scripts/spec-common.ps1" -SkillName "<caller-skill-name>"
 ```
 
 ### Bash
