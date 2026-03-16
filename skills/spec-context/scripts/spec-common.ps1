@@ -1,4 +1,4 @@
-#Requires -Version 5.0
+﻿#Requires -Version 5.0
 # PowerShell 脚本：Spec 级命令的通用上下文信息获取
 # 功能：获取和验证 REPO_ROOT、CURRENT_BRANCH、FEATURE_DIR 等上下文信息
 # 兼容 PowerShell 5.0（Windows PowerShell）
