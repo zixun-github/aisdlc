@@ -10,10 +10,16 @@
 # - 作为库被 source 时，不主动修改调用方的 shell 选项（如 set -e/-u）。
 
 # 脚本版本号（上报埋点时包含）
-SCRIPT_VERSION='1.0.1'
+SCRIPT_VERSION='1.0.2'
 
 # Spec 分支命名正则
 SPEC_BRANCH_PATTERN='^[0-9]{1,3}-[a-z0-9-]+$'
+
+# 在指定目录下执行 git 命令（替代 git -C，使命令可被前缀匹配授权）
+git_in_dir() {
+  local dir="$1"; shift
+  (cd "$dir" && git "$@")
+}
 
 spec_context__die() {
   local msg="$1"
@@ -68,7 +74,7 @@ get_current_branch() {
   local repo_root="${1:-}"
   local out
   if [[ -n "$repo_root" ]]; then
-    out="$(git -C "$repo_root" branch --show-current 2>/dev/null)" || return 1
+    out="$(git_in_dir "$repo_root" branch --show-current 2>/dev/null)" || return 1
   else
     out="$(git branch --show-current 2>/dev/null)" || return 1
   fi
@@ -194,7 +200,7 @@ get_submodule_set_json() {
     local path="${BASH_REMATCH[2]}"
     local full_path="$repo_root/$path"
     local remote branch head exists is_dirty is_detached
-    remote="$(git -C "$repo_root" config -f "$gitmodules_path" --get "submodule.$name.url" 2>/dev/null || true)"
+    remote="$(git_in_dir "$repo_root" config -f "$gitmodules_path" --get "submodule.$name.url" 2>/dev/null || true)"
     branch=""
     head=""
     exists=false
@@ -203,9 +209,9 @@ get_submodule_set_json() {
 
     if [[ -d "$full_path" ]] && test_git_directory_marker "$full_path"; then
       exists=true
-      branch="$(git -C "$full_path" branch --show-current 2>/dev/null || true)"
-      head="$(git -C "$full_path" rev-parse HEAD 2>/dev/null || true)"
-      if [[ -n "$(git -C "$full_path" status --porcelain 2>/dev/null || true)" ]]; then
+      branch="$(git_in_dir "$full_path" branch --show-current 2>/dev/null || true)"
+      head="$(git_in_dir "$full_path" rev-parse HEAD 2>/dev/null || true)"
+      if [[ -n "$(git_in_dir "$full_path" status --porcelain 2>/dev/null || true)" ]]; then
         is_dirty=true
       fi
       if [[ -z "$branch" ]]; then
@@ -229,7 +235,7 @@ get_submodule_set_json() {
     printf '"is_dirty":%s,' "$is_dirty"
     printf '"is_detached":%s' "$is_detached"
     printf '}'
-  done < <(git -C "$repo_root" config -f "$gitmodules_path" --get-regexp '^submodule\..*\.path$' 2>/dev/null || true)
+  done < <(git_in_dir "$repo_root" config -f "$gitmodules_path" --get-regexp '^submodule\..*\.path$' 2>/dev/null || true)
   printf ']'
 }
 

@@ -39,6 +39,12 @@ require_cmd() {
   command -v "$1" >/dev/null 2>&1 || die "缺少依赖命令: $1"
 }
 
+# 在指定目录下执行 git 命令（替代 git -C，使命令可被前缀匹配授权）
+git_in_dir() {
+  local dir="$1"; shift
+  (cd "$dir" && git "$@")
+}
+
 is_valid_short_name() {
   local s="$1"
   [[ "$s" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]
@@ -101,7 +107,7 @@ find_max_number() {
 
   # 1) 远程分支
   log "正在获取远程分支..."
-  git -C "$repo_root" fetch --all --prune 2>/dev/null || log "  警告: 无法获取远程分支"
+  git_in_dir "$repo_root" fetch --all --prune 2>/dev/null || log "  警告: 无法获取远程分支"
   while IFS= read -r line; do
     # e.g. "  origin/012-foo" or "  origin/012-foo -> origin/HEAD"
     local match_line="${line#*origin/}"
@@ -113,7 +119,7 @@ find_max_number() {
       if (( val > max )); then max="$val"; fi
       log "  找到远程分支编号: $n (分支: origin/$match_line)"
     fi
-  done < <(git -C "$repo_root" branch -r 2>/dev/null || true)
+  done < <(git_in_dir "$repo_root" branch -r 2>/dev/null || true)
 
   # 2) 本地分支
   log "正在获取本地分支..."
@@ -126,7 +132,7 @@ find_max_number() {
       if (( val > max )); then max="$val"; fi
       log "  找到本地分支编号: $n (分支: $line)"
     fi
-  done < <(git -C "$repo_root" branch 2>/dev/null || true)
+  done < <(git_in_dir "$repo_root" branch 2>/dev/null || true)
 
   # 3) specs 目录
   log "正在检查 specs 目录..."
@@ -157,8 +163,8 @@ find_max_number() {
 ensure_branch_not_exists() {
   local repo_root="$1"
   local branch="$2"
-  if git -C "$repo_root" show-ref --verify --quiet "refs/heads/$branch" || \
-     git -C "$repo_root" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+  if git_in_dir "$repo_root" show-ref --verify --quiet "refs/heads/$branch" || \
+     git_in_dir "$repo_root" show-ref --verify --quiet "refs/remotes/origin/$branch"; then
     die "分支 '$branch' 已存在"
   fi
 }
@@ -259,7 +265,7 @@ log "------------------------------------------"
 branch_name="${formatted_number}-${short_name}"
 ensure_branch_not_exists "$repo_root" "$branch_name"
 log "正在创建分支: $branch_name"
-git -C "$repo_root" checkout -b "$branch_name" 2>/dev/null || die "创建分支失败: git checkout -b $branch_name"
+git_in_dir "$repo_root" checkout -b "$branch_name" 2>/dev/null || die "创建分支失败: git checkout -b $branch_name"
 log "分支创建成功: $branch_name"
 log ""
 
