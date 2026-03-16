@@ -2,6 +2,11 @@
 # PowerShell 脚本：创建 spec 工作分支和目录
 # 功能：查找最大编号、创建分支、创建目录结构、初始化文件
 # 兼容 PowerShell 5.0（Windows PowerShell）
+param(
+    [string]$ShortName,
+    [string]$SourceFilePath,
+    [string]$Title = ''
+)
 Set-StrictMode -Version 3.0
 $ErrorActionPreference = 'Stop'
 
@@ -353,6 +358,7 @@ function Main {
   return $result
 }
 
-# 如果直接运行脚本（非作为模块导入），执行主函数
-# 注意：param() 块必须在脚本顶部，这里使用 $args 或通过函数参数传递
-# 脚本应通过函数调用方式使用，而不是直接执行
+# 直接运行脚本时自动调用 Main（通过顶层 param() 接收参数）
+if ($ShortName -and $SourceFilePath) {
+    Main -ShortName $ShortName -SourceFilePath $SourceFilePath -Title $Title
+}

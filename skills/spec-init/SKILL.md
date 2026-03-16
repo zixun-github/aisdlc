@@ -27,7 +27,7 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 - **必备子目录**：`requirements/`、`design/`、`implementation/`、`verification/`、`release/`
 - **初始文件**：`requirements/raw.md`（内容=原始需求；编码=UTF-8 with BOM）
 - **脚本位置**：`<本SKILL.md目录>/scripts/`
-- **脚本入口（PowerShell）**：`spec-create-branch.ps1` 的 `Main`（需 PowerShell 5.0+）
+- **脚本入口（PowerShell）**：`spec-create-branch.ps1`（`-File` 直接执行，需 PowerShell 5.0+）
 - **脚本入口（Bash）**：`spec-create-branch.sh`（命令行参数见 `--help`；stdout 输出 JSON）
 - **关键副作用**：脚本执行成功后会删除传入的源文件（无论是原始文件还是临时文件）。
 - **与子仓的边界**：若后续实现涉及 submodule，原则上由实现计划在 `I1 -> I2` 之间创建并校验与根项目同名的 Spec 分支
@@ -60,7 +60,7 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 
 **按操作系统自动选择脚本实现（不要硬跑"另一种"）。**
 
-- Windows / PowerShell：用 `powershell -ExecutionPolicy Bypass -Command "& { . '<脚本路径>'; Main ... }"` 调用
+- Windows / PowerShell：用 `powershell -NoProfile -ExecutionPolicy Bypass -File "<脚本路径>" ...` 调用
 - macOS/Linux / Bash：直接执行 `spec-create-branch.sh`（stdout 输出 JSON）
 
 **执行参数（只填参数即可）**
@@ -72,7 +72,7 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
   - 调用形态：
 
     ```powershell
-    powershell -ExecutionPolicy Bypass -Command "& { . '<本SKILL.md目录>/scripts/spec-create-branch.ps1'; Main -ShortName '<kebab-case>' -SourceFilePath '<需求文件路径>' [-Title '<标题>'] }"
+    powershell -NoProfile -ExecutionPolicy Bypass -File "<本SKILL.md目录>/scripts/spec-create-branch.ps1" -ShortName "<kebab-case>" -SourceFilePath "<需求文件路径>" [-Title "<标题>"]
     ```
 - Bash（`spec-create-branch.sh`）：
   - `--short-name <kebab-case>`
