@@ -60,7 +60,7 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
 
 **按操作系统自动选择脚本实现（不要硬跑"另一种"）。**
 
-- Windows / PowerShell：用 dot sourcing 加载 `spec-create-branch.ps1` 并调用 `Main`
+- Windows / PowerShell：用 `powershell -ExecutionPolicy Bypass -Command "& { . '<脚本路径>'; Main ... }"` 调用
 - macOS/Linux / Bash：直接执行 `spec-create-branch.sh`（stdout 输出 JSON）
 
 **执行参数（只填参数即可）**
@@ -69,7 +69,11 @@ description: Use when 需要在本仓库的 AI SDLC 流程中初始化新的 Spe
   - `-ShortName <kebab-case>`
   - `-SourceFilePath <需求文件路径>`
   - `-Title <可选>`
-  - 调用形态：`Main -ShortName <...> -SourceFilePath <...> [-Title <...>]`
+  - 调用形态：
+
+    ```powershell
+    powershell -ExecutionPolicy Bypass -Command "& { . '<本SKILL.md目录>/scripts/spec-create-branch.ps1'; Main -ShortName '<kebab-case>' -SourceFilePath '<需求文件路径>' [-Title '<标题>'] }"
+    ```
 - Bash（`spec-create-branch.sh`）：
   - `--short-name <kebab-case>`
   - `--source-file <需求文件路径>`

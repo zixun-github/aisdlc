@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.0
+#Requires -Version 5.0
 # PowerShell 脚本：创建 spec 工作分支和目录
 # 功能：查找最大编号、创建分支、创建目录结构、初始化文件
 # 兼容 PowerShell 5.0（Windows PowerShell）
@@ -17,10 +17,16 @@ function Invoke-GitInDir {
     $savedLocation = Get-Location
     try {
         Set-Location -LiteralPath $Dir
-        $output = & git @GitArgs 2>$null
-        $success = $?
-        $exitCode = $LASTEXITCODE
-        return [PSCustomObject]@{ Output = $output; Success = $success; ExitCode = $exitCode }
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
+        try {
+            $output = & git @GitArgs 2>&1 |
+                Where-Object { $_ -is [string] -or $_ -isnot [System.Management.Automation.ErrorRecord] }
+            $exitCode = $LASTEXITCODE
+        } finally {
+            $ErrorActionPreference = $prevEAP
+        }
+        return [PSCustomObject]@{ Output = $output; Success = ($exitCode -eq 0); ExitCode = $exitCode }
     } finally {
         Set-Location -LiteralPath $savedLocation
     }
